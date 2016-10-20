@@ -1,0 +1,15 @@
+*.sw[a-p]
+*.DS_Store
+*.exe
+*.o
+*.obj
+
+/Testing/Temporary/
+
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
