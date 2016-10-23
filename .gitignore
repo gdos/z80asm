@@ -4,7 +4,7 @@
 *.o
 *.obj
 
-/Testing/Temporary/
+/build/
 
 CMakeCache.txt
 CMakeFiles

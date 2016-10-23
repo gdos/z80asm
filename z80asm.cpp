@@ -9,6 +9,8 @@
 
 int main() //(int argc, char *argv[])
 {
-	std::cout << "z80asm version " << Z80ASM_VERSION_MAJOR << "." << Z80ASM_VERSION_MINOR << std::endl;
+	std::cout << "z80asm version " 
+		<< Z80ASM_VERSION_MAJOR << "." << Z80ASM_VERSION_MINOR 
+		<< std::endl;
 	return 0;
 }
