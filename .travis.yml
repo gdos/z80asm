@@ -1,14 +1,15 @@
 sudo: false
+
 language: cpp
+
 os:
   - linux
   - osx
+  
 compiler:
   - gcc
   - clang
-install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-  - if [ "$CXX" = "clang++" ]; then export CXXFLAGS="-D__float128=void"; fi
+  
 addons:
   apt:
     sources:
@@ -17,5 +18,15 @@ addons:
       - gcc-4.9
       - g++-4.9
       - clang
+      - re2c
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update      ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install re2c; fi
+
+install:
+  - if [ "$CXX" = "g++"     ]; then export CXX="g++-4.9" CC="gcc-4.9"  ; fi
+  - if [ "$CXX" = "clang++" ]; then export CXXFLAGS="-D__float128=void"; fi
+  
 script: 
-  - cmake . && make all test
+  - cmake . && make all && make test
