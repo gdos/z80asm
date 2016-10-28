@@ -4,12 +4,12 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
+#include "filesystem/path.h"
+#include "test.h"
+
 #include <sys/stat.h>
 
-#include "test.h"
-#include "filesystem/path.h"
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	if (argc != 1) {
 		FAIL();

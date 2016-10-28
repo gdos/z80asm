@@ -3,7 +3,8 @@
 // Copyright (c) Paulo Custodio, 2015-2016
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
-#pragma once
+#ifndef SOURCE_H_
+#define SOURCE_H_
 
 #include <fstream>
 #include <string>
@@ -12,52 +13,51 @@
 class SourceFile;
 
 // input source line
-struct SourceLine
-{
-	SourceLine(SourceFile *psource_, unsigned line_nr_, std::string text_)
-		: psource(psource_), line_nr(line_nr_), text(text_) {}
+struct SourceLine {
+public:
+	SourceLine(SourceFile* weak_ptr_source_, int line_num_, std::string text_)
+		: weak_ptr_source(weak_ptr_source_), line_num(line_num_), text(text_) {}
 
-	SourceFile	*psource;	// weak pointer
-	unsigned	 line_nr;
-	std::string	 text;		// "" if keep_lines = false
+	SourceFile* weak_ptr_source;	
+	int	        line_num;
+	std::string	text;		// empty if keep_lines = false
 };
 
 // input file
-class SourceFile 
-{
+class SourceFile {
 public:
-	SourceFile(const std::string& filename_, bool keep_lines_ = false);		// keep previous lines?
+	SourceFile(const std::string& filename, bool keep_lines = false);		// keep previous lines?
 	virtual ~SourceFile();
 
-	const std::string& get_filename() const { return filename; }
-	bool good() const { return ifs.good(); }
+	const std::string& filename() const { return filename_; }
+	bool good() const { return ifs_.good(); }
 
 	// read new line, allocate internal SourceLine, return pointer to it; return NULL on end of file
-	SourceLine *getline();
+	SourceLine* getline();
 
 private:
-	std::string		filename;
-	std::ifstream	ifs;
-	bool			keep_lines;			// if false(default), only last line is preserved
-	std::vector<SourceLine *> lines;	// owns pointers
+	std::string		filename_;
+	std::ifstream	ifs_;
+	bool			keep_lines_;		// if false(default), only last line is preserved
+	std::vector<SourceLine*> lines_;
 };
 
 // stack of input files to read includes
-class SourceStack
-{
+class SourceStack {
 public:
-	SourceStack(bool keep_lines_ = false);				// keep previous lines?
+	SourceStack(bool keep_lines = false);				// keep previous lines?
 	virtual ~SourceStack();
 
 	bool has_file(const std::string& filename);			// is the given file in the open stack?
 	bool open(const std::string& filename);				// open a new file to read at this point
 
-	SourceLine *getline();								// call getline from the top-of-stack, pop it when eof
+	SourceLine* getline();								// call getline from the top-of-stack, pop it when eof
 
 private:
-	bool			keep_lines;							// if false(default), only last line is preserved
-	std::vector<SourceLine *> plines;					// points into SourceFile's SourceLines
-	std::vector<SourceFile *> files;					// all files opened, owns the pointers
-	std::vector<SourceFile *> pstack;					// current input stack, weak pointers
+	bool    keep_lines_;					    		// if false(default), only last line is preserved
+	std::vector<SourceLine*> weak_ptr_lines;			// points into SourceFile's SourceLines
+	std::vector<SourceFile*> files;	    				// all files opened, owns the pointers
+	std::vector<SourceFile*> weak_ptr_stack;			// current input stack
 };
 
+#endif // SOURCE_H_

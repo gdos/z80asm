@@ -5,12 +5,13 @@
 //-----------------------------------------------------------------------------
 
 #include <iostream>
-#include "z80asm_config.h"
+
 #include "preproc.h"
+#include "z80asm_config.h"
 
-extern const char *lex(const char *YYCURSOR);
+extern const char* lex(const char* YYCURSOR);
 
-int main() //(int argc, char *argv[])
+int main() //(int argc, char* argv[])
 {
 	std::cout << "z80asm version " 
 		<< Z80ASM_VERSION_MAJOR << "." << Z80ASM_VERSION_MINOR 

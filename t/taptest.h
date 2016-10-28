@@ -4,7 +4,8 @@
 // Copyright (c) Paulo Custodio, 2015-2016
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
-#pragma once
+#ifndef T_TAPTEST_H_
+#define T_TAPTEST_H_
 
 #include <iostream>
 
@@ -39,3 +40,5 @@ int test_nr = 0;
              (failed_nr > 1 ? "s" : "") << " of " << test_nr << "."); \
         return 1; \
     }
+
+#endif // T_TAPTEST_H_

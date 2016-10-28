@@ -7,73 +7,73 @@
 #include "source.h"
 #include "util.h"
 
-SourceFile::SourceFile(const std::string& filename_, bool keep_lines_)
-	: filename(filename_)
-	, ifs(filename.c_str(), std::ios::in | std::ios::binary)
-	, keep_lines(keep_lines_)
+SourceFile::SourceFile(const std::string& filename, bool keep_lines)
+	: filename_(filename)
+	, ifs_(filename_.c_str(), std::ios::in | std::ios::binary)
+	, keep_lines_(keep_lines)
 {
-	if (!ifs.good())
-		std::perror(filename.c_str());
+	if (!ifs_.good())
+		std::perror(filename_.c_str());
 }
 
 SourceFile::~SourceFile()
 {
-	ifs.close();
-	for (std::vector<SourceLine *>::iterator it = lines.begin(); it != lines.end(); ++it)
+	ifs_.close();
+	for (std::vector<SourceLine*>::iterator it = lines_.begin(); it != lines_.end(); ++it)
 		delete *it;
-	lines.clear();
+	lines_.clear();
 }
 
-SourceLine *SourceFile::getline()
+SourceLine* SourceFile::getline()
 {
 	std::string text;
 
-	if (safe_getline(ifs, text).good()) {
-		// delete previous lines, unless m_keep_lines
-		if (!lines.empty() && !keep_lines)
-			lines.back()->text = std::string();
+	if (safe_getline(ifs_, text).good()) {
+		// delete previous lines, unless keep_lines_
+		if (!lines_.empty() && !keep_lines_)
+			lines_.back()->text = std::string();
 
 		// allocate a new SourceLine and append to vector
-		unsigned line_nr = lines.size() + 1;
-		lines.push_back(new SourceLine(this, line_nr, text));
+		int line_num = lines_.size() + 1;
+		lines_.push_back(new SourceLine(this, line_num, text));
 
-		return lines.back();
+		return lines_.back();
 	}
 	else {
-		ifs.close();
+		ifs_.close();
 		return NULL;
 	}
 }
 
-SourceStack::SourceStack(bool keep_lines_)
-	: keep_lines(keep_lines_)
+SourceStack::SourceStack(bool keep_lines)
+	: keep_lines_(keep_lines)
 {
 }
 
 SourceStack::~SourceStack()
 {
-	plines.clear();		// weak pointers
-	pstack.clear();		// weak pointers
+	weak_ptr_lines.clear();
+	weak_ptr_stack.clear();
 
-	for (std::vector<SourceFile *>::iterator it = files.begin(); it != files.end(); ++it)
+	for (std::vector<SourceFile*>::iterator it = files.begin(); it != files.end(); ++it)
 		delete *it;
 	files.clear();
 }
 
 bool SourceStack::has_file(const std::string& filename)
 {
-	for (std::vector<SourceFile *>::iterator it = pstack.begin(); it != pstack.end(); ++it)
-		if ((*it)->get_filename() == filename)
+	for (std::vector<SourceFile*>::iterator it = weak_ptr_stack.begin(); it != weak_ptr_stack.end(); ++it)
+		if ((*it)->filename() == filename)
 			return true;
 	return false;
 }
 
 bool SourceStack::open(const std::string& filename)
 {
-	SourceFile *file = new SourceFile(filename, keep_lines);
+	SourceFile* file = new SourceFile(filename, keep_lines_);
 	if (file->good()) {
 		files.push_back(file);
-		pstack.push_back(file);
+		weak_ptr_stack.push_back(file);
 		return true;
 	}
 	else {
@@ -82,16 +82,16 @@ bool SourceStack::open(const std::string& filename)
 	}
 }
 
-SourceLine *SourceStack::getline()
+SourceLine* SourceStack::getline()
 {
-	while (!pstack.empty()) {
-		SourceLine *pline = pstack.back()->getline();
+	while (!weak_ptr_stack.empty()) {
+		SourceLine* pline = weak_ptr_stack.back()->getline();
 		if (pline != NULL) {
-			plines.push_back(pline);
+			weak_ptr_lines.push_back(pline);
 			return pline;
 		}
 		else {							// end of this source
-			pstack.pop_back();			// weak pointer, no delete
+			weak_ptr_stack.pop_back();
 		}
 	}
 	return NULL;

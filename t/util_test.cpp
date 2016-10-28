@@ -4,8 +4,8 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
-#include "test.h"
 #include "util.h"
+#include "test.h"
 
 #define T_CREATE(data) \
 		create_test_file("test.1", data); \

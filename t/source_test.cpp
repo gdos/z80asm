@@ -4,19 +4,20 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
-#include "test.h"
 #include "source.h"
+#include "test.h"
 
 #define T_CREATE(data,keep) \
 		if (file) { delete file; file = NULL; } \
 		create_test_file("test.1", data); \
 		file = new SourceFile("test.1", keep); \
+        IS(file->filename(), "test.1"); \
 		OK(file->good())
 
 #define T_READ(nr, text_) \
 		line = file->getline(); \
 		OK(line != NULL); \
-		IS(line->line_nr, nr); \
+		IS(line->line_num, nr); \
 		IS(line->text, text_)
 
 #define T_EOF() \
@@ -30,8 +31,9 @@
 
 void test_SourceFile()
 {
-	SourceFile *file = NULL;
-	SourceLine *line, *lines[3];
+	SourceFile* file = NULL;
+    SourceLine* line;
+    SourceLine* lines[3];
 
 	// empty file
 	T_CREATE("", false);
@@ -69,9 +71,9 @@ void test_SourceFile()
 	T_READ(2, "2"); lines[1] = line;
 	T_READ(3, "3"); lines[2] = line;
 	T_EOF();
-	OK(lines[0]->psource == file); IS(lines[0]->line_nr, 1); IS(lines[0]->text, "");
-	OK(lines[1]->psource == file); IS(lines[1]->line_nr, 2); IS(lines[1]->text, "");
-	OK(lines[2]->psource == file); IS(lines[2]->line_nr, 3); IS(lines[2]->text, "3");
+	OK(lines[0]->weak_ptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "");
+	OK(lines[1]->weak_ptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "");
+	OK(lines[2]->weak_ptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
 	T_DELETE();
 
 	T_CREATE("1\n2\n3", true);
@@ -79,9 +81,9 @@ void test_SourceFile()
 	T_READ(2, "2"); lines[1] = line;
 	T_READ(3, "3"); lines[2] = line;
 	T_EOF();
-	OK(lines[0]->psource == file); IS(lines[0]->line_nr, 1); IS(lines[0]->text, "1");
-	OK(lines[1]->psource == file); IS(lines[1]->line_nr, 2); IS(lines[1]->text, "2");
-	OK(lines[2]->psource == file); IS(lines[2]->line_nr, 3); IS(lines[2]->text, "3");
+	OK(lines[0]->weak_ptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "1");
+	OK(lines[1]->weak_ptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "2");
+	OK(lines[2]->weak_ptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
 	T_DELETE();
 }
 
@@ -114,8 +116,8 @@ void test_SourceStack()
 	OK(st1.has_file("test.1")); OK(!st1.has_file("test.2")); OK(!st1.has_file("test.3"));
 	OK(st2.has_file("test.1")); OK(!st2.has_file("test.2")); OK(!st2.has_file("test.3"));
 
-	SourceLine *l1 = st1.getline(); IS(l1->line_nr, 1); IS(l1->text, "11");
-	SourceLine *l2 = st2.getline(); IS(l2->line_nr, 1); IS(l2->text, "11");
+	SourceLine* l1 = st1.getline(); IS(l1->line_num, 1); IS(l1->text, "11");
+	SourceLine* l2 = st2.getline(); IS(l2->line_num, 1); IS(l2->text, "11");
 
 	OK(st1.open("test.2"));
 	OK(st2.open("test.2"));
@@ -123,20 +125,20 @@ void test_SourceStack()
 	OK(st1.has_file("test.1")); OK(st1.has_file("test.2")); OK(!st1.has_file("test.3"));
 	OK(st2.has_file("test.1")); OK(st2.has_file("test.2")); OK(!st2.has_file("test.3"));
 
-	l1 = st1.getline(); IS(l1->line_nr, 1); IS(l1->text, "21");
-	l2 = st2.getline(); IS(l2->line_nr, 1); IS(l2->text, "21");
+	l1 = st1.getline(); IS(l1->line_num, 1); IS(l1->text, "21");
+	l2 = st2.getline(); IS(l2->line_num, 1); IS(l2->text, "21");
 
-	l1 = st1.getline(); IS(l1->line_nr, 2); IS(l1->text, "22");
-	l2 = st2.getline(); IS(l2->line_nr, 2); IS(l2->text, "22");
+	l1 = st1.getline(); IS(l1->line_num, 2); IS(l1->text, "22");
+	l2 = st2.getline(); IS(l2->line_num, 2); IS(l2->text, "22");
 
-	l1 = st1.getline(); IS(l1->line_nr, 3); IS(l1->text, "23");
-	l2 = st2.getline(); IS(l2->line_nr, 3); IS(l2->text, "23");
+	l1 = st1.getline(); IS(l1->line_num, 3); IS(l1->text, "23");
+	l2 = st2.getline(); IS(l2->line_num, 3); IS(l2->text, "23");
 
-	l1 = st1.getline(); IS(l1->line_nr, 2); IS(l1->text, "12");
-	l2 = st2.getline(); IS(l2->line_nr, 2); IS(l2->text, "12");
+	l1 = st1.getline(); IS(l1->line_num, 2); IS(l1->text, "12");
+	l2 = st2.getline(); IS(l2->line_num, 2); IS(l2->text, "12");
 
-	l1 = st1.getline(); IS(l1->line_nr, 3); IS(l1->text, "13");
-	l2 = st2.getline(); IS(l2->line_nr, 3); IS(l2->text, "13");
+	l1 = st1.getline(); IS(l1->line_num, 3); IS(l1->text, "13");
+	l2 = st2.getline(); IS(l2->line_num, 3); IS(l2->text, "13");
 
 	l1 = st1.getline(); OK(l1 == NULL); l1 = st1.getline(); OK(l1 == NULL); l1 = st1.getline(); OK(l1 == NULL);
 	l2 = st2.getline(); OK(l2 == NULL); l2 = st2.getline(); OK(l2 == NULL); l2 = st2.getline(); OK(l2 == NULL);

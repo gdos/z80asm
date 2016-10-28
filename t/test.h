@@ -3,17 +3,20 @@
 // Copyright (c) Paulo Custodio, 2015-2016
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
-#pragma once
-
-#include <iostream>
-#include <fstream>
-#include <sys/stat.h>
-#include <cstdio>
+#ifndef T_TEST_H_
+#define T_TEST_H_
 
 #include "taptest.h"
 
+#include <cstdio>
+#include <sys/stat.h>
+
+#include <iostream>
+#include <fstream>
+
+
 // create test file
-inline void create_test_file(const char *filename, const char *text)
+inline void create_test_file(const char* filename, const char* text)
 {
 	std::ofstream file(filename, std::ios::binary);
 	if (!file.good()) {
@@ -28,7 +31,7 @@ inline void create_test_file(const char *filename, const char *text)
 }
 
 // delete test file
-inline void delete_test_file(const char *filename)
+inline void delete_test_file(const char* filename)
 {
 	struct stat status;
 	if (stat(filename, &status) == 0) {		// file exists
@@ -38,3 +41,5 @@ inline void delete_test_file(const char *filename)
 		}
 	}
 }
+
+#endif // T_TEST_H_

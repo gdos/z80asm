@@ -57,9 +57,9 @@ set_tests_properties(	z80asm_version
 )
 
 foreach(TEST_PROG	
-		t_filesystem
-		t_source
-		t_util
+		filesystem_test
+		source_test
+		util_test
 	)
 	add_executable(			${TEST_PROG}	"t/${TEST_PROG}.cpp" 	)
 	target_link_libraries(	${TEST_PROG}	z80asmlib				)
