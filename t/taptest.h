@@ -8,6 +8,7 @@
 #define T_TAPTEST_H_
 
 #include <iostream>
+#include <exception>
 
 int failed_nr = 0;
 int test_nr = 0;
@@ -31,14 +32,21 @@ int test_nr = 0;
 #define PASS()          _OK(true,       0, "")
 #define FAIL()          _OK(false,      0, "")
 
+#define START_TESTING() \
+	try { \
+
 #define DONE_TESTING() \
-    std::cout << "1.." << test_nr << std::endl; \
-    if (failed_nr == 0) { \
-        return 0; \
-    } else { \
-        DIAG("Looks like you failed " << failed_nr << " test" << \
-             (failed_nr > 1 ? "s" : "") << " of " << test_nr << "."); \
-        return 1; \
-    }
+		PASS(); \
+	} catch(std::exception&) { \
+		FAIL(); \
+	} \
+	std::cout << "1.." << test_nr << std::endl; \
+	if (failed_nr == 0) { \
+		return 0; \
+	} else { \
+		DIAG("Looks like you failed " << failed_nr << " test" << \
+				(failed_nr > 1 ? "s" : "") << " of " << test_nr << "."); \
+		return 1; \
+	}
 
 #endif // T_TAPTEST_H_

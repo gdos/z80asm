@@ -1,0 +1,34 @@
+#-----------------------------------------------------------------------------
+# z80asm
+# Copyright (c) Paulo Custodio, 2015-2016
+# License: http://www.perlfoundation.org/artistic_license_2_0
+#-----------------------------------------------------------------------------
+
+package z80asm_config;
+use Test::More;
+use Test::Differences;
+use Capture::Tiny 'capture';
+use Config;
+
+use Exporter 'import';
+@EXPORT = qw(call_z80asm $PROGNAME $VERSION $COPYRIGHT $NOTFOUND $Z80ASM);
+
+$PROGNAME  = '@Z80ASM_NAME@';
+$VERSION   = '@Z80ASM_VERSION_MAJOR@.@Z80ASM_VERSION_MINOR@.@Z80ASM_VERSION_PATCH@.@Z80ASM_VERSION_BUILD@';
+$COPYRIGHT = '@Z80ASM_COPYRIGHT@';
+$NOTFOUND  = do { unlink 'nonexistent'; open(my $fh, "<nonexistent"); $! };
+$Z80ASM    = (grep {-f $_} map {"$_/$PROGNAME$Config{_exe}"} '.', 'Debug', 'Release')[0];
+ 
+sub call_z80asm {
+	my($args, $exp_out, $exp_err, $exp_exit) = @_;
+	
+	my $cmd = "$Z80ASM $args";
+	ok 1, $cmd;
+	my($out, $err, $exit) = capture { system $cmd; };
+	eq_or_diff $out, $exp_out, "out";
+	eq_or_diff $err, $exp_err, "out";
+	is !!$exit, !!$exp_exit, "exit";
+}
+
+
+1;

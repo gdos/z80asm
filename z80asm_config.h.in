@@ -3,6 +3,21 @@
 // Copyright (c) Paulo Custodio, 2015-2016
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
+#ifndef Z80ASM_CONFIG_H_
+#define Z80ASM_CONFIG_H_
 
+// version from CMakeLists.txt
 #define Z80ASM_VERSION_MAJOR @Z80ASM_VERSION_MAJOR@
 #define Z80ASM_VERSION_MINOR @Z80ASM_VERSION_MINOR@
+#define Z80ASM_VERSION_PATCH @Z80ASM_VERSION_PATCH@
+#define Z80ASM_VERSION_BUILD @Z80ASM_VERSION_BUILD@
+
+// name and copyright from CMakeLists.txt
+#define Z80ASM_NAME         "@Z80ASM_NAME@"
+#define Z80ASM_COPYRIGHT    "@Z80ASM_COPYRIGHT@"
+
+// file extensions
+#define ASM_EXT ".asm"
+#define OBJ_EXT ".o"
+
+#endif // Z80ASM_CONFIG_H_

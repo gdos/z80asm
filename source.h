@@ -6,6 +6,8 @@
 #ifndef SOURCE_H_
 #define SOURCE_H_
 
+#include "fwd.h"
+
 #include <fstream>
 #include <string>
 #include <vector>
@@ -15,12 +17,13 @@ class SourceFile;
 // input source line
 struct SourceLine {
 public:
-	SourceLine(SourceFile* weak_ptr_source_, int line_num_, std::string text_)
-		: weak_ptr_source(weak_ptr_source_), line_num(line_num_), text(text_) {}
+	SourceLine(SourceFile* wptr_source_, int line_num_, std::string text_)
+		: wptr_source(wptr_source_), line_num(line_num_), text(text_), col_num(0) {}
 
-	SourceFile* weak_ptr_source;	
+	SourceFile* wptr_source;	
 	int	        line_num;
 	std::string	text;		// empty if keep_lines = false
+    int         col_num;    // set to zero on each new line read, used by scanner to remember last scanned token
 };
 
 // input file
@@ -55,9 +58,9 @@ public:
 
 private:
 	bool    keep_lines_;					    		// if false(default), only last line is preserved
-	std::vector<SourceLine*> weak_ptr_lines;			// points into SourceFile's SourceLines
+	std::vector<SourceLine*> wptr_lines;			// points into SourceFile's SourceLines
 	std::vector<SourceFile*> files;	    				// all files opened, owns the pointers
-	std::vector<SourceFile*> weak_ptr_stack;			// current input stack
+	std::vector<SourceFile*> wptr_stack;			// current input stack
 };
 
 #endif // SOURCE_H_

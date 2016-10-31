@@ -61,7 +61,7 @@ void test_safe_getline()
 
 int main()
 {
+	START_TESTING();
 	test_safe_getline();
-
 	DONE_TESTING();
 }

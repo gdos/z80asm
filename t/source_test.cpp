@@ -71,9 +71,9 @@ void test_SourceFile()
 	T_READ(2, "2"); lines[1] = line;
 	T_READ(3, "3"); lines[2] = line;
 	T_EOF();
-	OK(lines[0]->weak_ptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "");
-	OK(lines[1]->weak_ptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "");
-	OK(lines[2]->weak_ptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
+	OK(lines[0]->wptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "");
+	OK(lines[1]->wptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "");
+	OK(lines[2]->wptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
 	T_DELETE();
 
 	T_CREATE("1\n2\n3", true);
@@ -81,9 +81,9 @@ void test_SourceFile()
 	T_READ(2, "2"); lines[1] = line;
 	T_READ(3, "3"); lines[2] = line;
 	T_EOF();
-	OK(lines[0]->weak_ptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "1");
-	OK(lines[1]->weak_ptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "2");
-	OK(lines[2]->weak_ptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
+	OK(lines[0]->wptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "1");
+	OK(lines[1]->wptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "2");
+	OK(lines[2]->wptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
 	T_DELETE();
 }
 
@@ -150,8 +150,8 @@ void test_SourceStack()
 
 int main()
 {
+	START_TESTING();
 	test_SourceFile();
 	test_SourceStack();
-
 	DONE_TESTING();
 }

@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[])
 {
+	START_TESTING();
 	if (argc != 1) {
 		FAIL();
 	}
@@ -29,6 +30,5 @@ int main(int argc, char* argv[])
 			PASS();
 		}
 	}
-
 	DONE_TESTING();
 }
