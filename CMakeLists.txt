@@ -3,7 +3,7 @@
 # Copyright (c) Paulo Custodio, 2015-2016
 # License: http://www.perlfoundation.org/artistic_license_2_0
 #-----------------------------------------------------------------------------
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 2.8.6)
 project(z80asm CXX)
 
 # Force C++ 98
@@ -24,8 +24,11 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/t"
 )
 
-# Need re2c
-include("CMake/FindRE2C.cmake")
+# Build re2c
+file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/re2c/re2c")
+add_subdirectory("${PROJECT_SOURCE_DIR}/re2c/re2c")
+
+include("${PROJECT_SOURCE_DIR}/CMake/FindRE2C.cmake")
 RE2C_TARGET(Scanner scanner.re  "${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp")
 
 # configure a header file to pass some of the CMake settings

@@ -1,3 +1,6 @@
 [submodule "filesystem"]
 	path = filesystem
 	url = https://github.com/pauloscustodio/filesystem.git
+[submodule "re2c"]
+	path = re2c
+	url = https://github.com/pauloscustodio/re2c.git

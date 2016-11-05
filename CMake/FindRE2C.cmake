@@ -3,11 +3,11 @@
 #
 #=============================================================================
 
-find_program(RE2C_EXECUTABLE re2c DOC "path to the re2c executable")
-mark_as_advanced(RE2C_EXECUTABLE)
-
-include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(RE2C DEFAULT_MSG RE2C_EXECUTABLE)
+#find_program(RE2C_EXECUTABLE re2c DOC "path to the re2c executable")
+#mark_as_advanced(RE2C_EXECUTABLE)
+#
+#include(FindPackageHandleStandardArgs)
+#FIND_PACKAGE_HANDLE_STANDARD_ARGS(RE2C DEFAULT_MSG RE2C_EXECUTABLE)
 
 # Provide a macro to generate custom build rules:
 
@@ -99,10 +99,10 @@ if(NOT COMMAND RE2C_TARGET)
     endif()
 
     add_custom_command(OUTPUT ${Output}
-      COMMAND ${RE2C_EXECUTABLE}
+      COMMAND re2c
       ARGS ${RE2C_EXECUTABLE_opts} -o${Output} ${Input}
-      DEPENDS ${Input} ${RE2C_EXECUTABLE_TARGET}
-      COMMENT "[RE2C][${Name}] Building scanner with ${RE2C_EXECUTABLE}"
+      DEPENDS re2c ${Input} ${RE2C_EXECUTABLE_TARGET}
+      COMMENT "[RE2C][${Name}] Building scanner with re2c"
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
     set(RE2C_${Name}_DEFINED TRUE)
