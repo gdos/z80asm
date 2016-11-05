@@ -18,8 +18,18 @@ addons:
       - gcc-4.9
       - g++-4.9
       - clang
+      - perl
+      - cpanminus
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update           ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install cpanminus; fi
 
 install:
+  - cpanm -L$HOME/perl5/lib/perl5   local::lib
+  - perl  -I$HOME/perl5/lib/perl5 -Mlocal::lib
+  - eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)"
+  - cpanm Modern::Perl Path::Tiny Test::Differences
   - if [ "$CXX" = "g++"     ]; then export CXX="g++-4.9" CC="gcc-4.9"  ; fi
   - if [ "$CXX" = "clang++" ]; then export CXXFLAGS="-D__float128=void"; fi
   
