@@ -4,7 +4,7 @@
 # License: http://www.perlfoundation.org/artistic_license_2_0
 #-----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 2.8.6)
-project(z80asm CXX)
+project(z80asm CXX C)
 
 # Force C++ 98
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -U__STRICT_ANSI__")
@@ -27,6 +27,19 @@ include_directories(
 # Build re2c
 file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/re2c/re2c")
 add_subdirectory("${PROJECT_SOURCE_DIR}/re2c/re2c")
+#-----------------------------------------------------------------------------
+# make lemon
+#-----------------------------------------------------------------------------
+add_executable(lemon "${PROJECT_SOURCE_DIR}/lemon/lemon.c")
+set(LEMON_EXECUTABLE ${PROJECT_BINARY_DIR}/lemon${CMAKE_EXECUTABLE_SUFFIX})
+set(LEMON_TEMPLATE 	 ${PROJECT_SOURCE_DIR}/lemon/lempar.c)
+add_custom_command(
+  OUTPUT	${LEMON_EXECUTABLE}
+  DEPENDS	lemon
+  COMMAND 	${CMAKE_COMMAND} -E copy $<TARGET_FILE:lemon> ${LEMON_EXECUTABLE}
+  COMMENT	"Create ${LEMON_EXECUTABLE}"
+)
+
 
 include("${PROJECT_SOURCE_DIR}/CMake/FindRE2C.cmake")
 RE2C_TARGET(Scanner scanner.re  "${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp")

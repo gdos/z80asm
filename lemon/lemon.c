@@ -2760,7 +2760,7 @@ void Parse(struct lemon *gp)
   ps.state = INITIALIZE;
 
   /* Begin by reading the input file */
-  fp = fopen(ps.filename,"rb");
+  fp = fopen(ps.filename,"r");
   if( fp==0 ){
     ErrorMsg(ps.filename,0,"Can't open this file for reading.");
     gp->errorcnt++;
@@ -2776,7 +2776,8 @@ void Parse(struct lemon *gp)
     fclose(fp);
     return;
   }
-  if( fread(filebuf,1,filesize,fp)!=filesize ){
+  filesize = fread(filebuf,1,filesize,fp);
+  if( filesize<=0 ){
     ErrorMsg(ps.filename,0,"Can't read in all %d bytes of this file.",
       filesize);
     free(filebuf);
@@ -3186,7 +3187,7 @@ void ReportOutput(struct lemon *lemp)
   struct action *ap;
   FILE *fp;
 
-  fp = file_open(lemp,".out","wb");
+  fp = file_open(lemp,".out","w");
   if( fp==0 ) return;
   for(i=0; i<lemp->nxstate; i++){
     stp = lemp->sorted[i];
@@ -3357,7 +3358,7 @@ PRIVATE FILE *tplt_open(struct lemon *lemp)
       lemp->errorcnt++;
       return 0;
     }
-    in = fopen(user_templatename,"rb");
+    in = fopen(user_templatename,"r");
     if( in==0 ){
       fprintf(stderr,"Can't open the template file \"%s\".\n",
               user_templatename);
@@ -3386,7 +3387,7 @@ PRIVATE FILE *tplt_open(struct lemon *lemp)
     lemp->errorcnt++;
     return 0;
   }
-  in = fopen(tpltname,"rb");
+  in = fopen(tpltname,"r");
   if( in==0 ){
     fprintf(stderr,"Can't open the template file \"%s\".\n",templatename);
     lemp->errorcnt++;
@@ -4010,7 +4011,7 @@ void ReportTable(
 
   in = tplt_open(lemp);
   if( in==0 ) return;
-  out = file_open(lemp,".c","wb");
+  out = file_open(lemp,".cpp","w");
   if( out==0 ){
     fclose(in);
     return;
@@ -4501,7 +4502,7 @@ void ReportHeader(struct lemon *lemp)
 
   if( lemp->tokenprefix ) prefix = lemp->tokenprefix;
   else                    prefix = "";
-  in = file_open(lemp,".h","rb");
+  in = file_open(lemp,".h","r");
   if( in ){
     int nextChar;
     for(i=1; i<lemp->nterminal && fgets(line,LINESIZE,in); i++){
@@ -4516,7 +4517,7 @@ void ReportHeader(struct lemon *lemp)
       return;
     }
   }
-  out = file_open(lemp,".h","wb");
+  out = file_open(lemp,".h","w");
   if( out ){
     for(i=1; i<lemp->nterminal; i++){
       fprintf(out,"#define %s%-30s %3d\n",prefix,lemp->symbols[i]->name,i);
