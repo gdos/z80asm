@@ -9,6 +9,7 @@ project(z80asm CXX C)
 # Force C++ 98
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -U__STRICT_ANSI__")
 
+#-----------------------------------------------------------------------------
 # The version number.
 set(Z80ASM_VERSION_MAJOR 1)
 set(Z80ASM_VERSION_MINOR 0)
@@ -24,9 +25,6 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/t"
 )
 
-# Build re2c
-file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/re2c/re2c")
-add_subdirectory("${PROJECT_SOURCE_DIR}/re2c/re2c")
 #-----------------------------------------------------------------------------
 # make lemon
 #-----------------------------------------------------------------------------
@@ -36,13 +34,25 @@ set(LEMON_TEMPLATE 	 ${PROJECT_SOURCE_DIR}/lemon/lempar.c)
 add_custom_command(
   OUTPUT	${LEMON_EXECUTABLE}
   DEPENDS	lemon
-  COMMAND 	${CMAKE_COMMAND} -E copy $<TARGET_FILE:lemon> ${LEMON_EXECUTABLE}
+  COMMAND 	${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:lemon> ${LEMON_EXECUTABLE}
   COMMENT	"Create ${LEMON_EXECUTABLE}"
 )
 
+#-----------------------------------------------------------------------------
+# make re2c
+#-----------------------------------------------------------------------------
+set(RE2C_DISABLE_TESTS ON)
+file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/re2c/re2c")
+add_subdirectory("${PROJECT_SOURCE_DIR}/re2c/re2c")
+set(RE2C_EXECUTABLE ${PROJECT_BINARY_DIR}/re2c/re2c/re2c${CMAKE_EXECUTABLE_SUFFIX})
+add_custom_command(
+  OUTPUT	${RE2C_EXECUTABLE}
+  DEPENDS	re2c
+  COMMAND 	${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:re2c> ${RE2C_EXECUTABLE}
+  COMMENT	"Create ${RE2C_EXECUTABLE}"
+)
 
-include("${PROJECT_SOURCE_DIR}/CMake/FindRE2C.cmake")
-RE2C_TARGET(Scanner scanner.re  "${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp")
+
 
 # configure a header file to pass some of the CMake settings
 # to the source code
