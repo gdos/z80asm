@@ -9,7 +9,8 @@
 #include "fwd.h"
 
 enum ScanState {
-    kScanAtLabel, kScanAtOperation, kScanAtArgs, kScanAtEos
+    kScanAtLabel, kScanAtOperation, kScanAtArgs, kScanAtEos,
+	kScan_LD, kScan_LD_dd, kScan_LD_dd_comma
 };
 
 class Scanner {

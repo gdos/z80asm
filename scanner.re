@@ -28,6 +28,12 @@ bool Scanner::parse() {
     return ok;
 }
 
+// state transitions
+#define NEXT()	continue
+#define GOTO(x)	state_ = (x); NEXT()
+#define ERROR()	goto scan_error
+#define EMIT(x)	obj_->add_opcode(line, (x))
+
 bool Scanner::parse_line(SourceLine* line) {
     bool ok = true;
     const char* YYCURSOR = line->text.c_str();
@@ -35,13 +41,15 @@ bool Scanner::parse_line(SourceLine* line) {
     const char* YYCTXMARKER;
 	const char* token;
     state_ = kScanAtLabel;
-
+	int r1;
+	
     /*!re2c
         re2c:define:YYCTYPE = char;
         re2c:yyfill:enable = 0;
-        ws = [ \t];
-        word     =  [_0-9a-zA-Z];
-        not_word = [^_0-9a-zA-Z];
+        _s_ =  [ \t];
+        _S_ = [^ \t];
+        _w_ =  [_0-9a-zA-Z];
+        _W_ = [^_0-9a-zA-Z];
     */
     while (ok && *YYCURSOR != '\0') {   // read all tokens
 		token = YYCURSOR;
@@ -51,15 +59,39 @@ bool Scanner::parse_line(SourceLine* line) {
             // fall through
         case kScanAtOperation:
             /*!re2c
-				ws+						{ continue; }
-                'nop' / not_word		{ obj_->add_opcode(line, &opc_nop); 
-                                          state_ = kScanAtEos; 
-                                          continue; }
-				*						{  goto scan_error; }
+				_s_+			{ NEXT(); }
+				'ld'	/ _W_	{ GOTO(kScan_LD); }
+                'nop'	/ _W_	{ EMIT(opc_nop()); GOTO(kScanAtEos); }
+				*				{ ERROR(); }
             */
-
             break;
 
+		case kScan_LD:
+            /*!re2c
+				_s_+			{ NEXT(); }
+				'bc'	/ _W_	{ r1 = 0; GOTO(kScan_LD_dd); }
+				'de'	/ _W_	{ r1 = 1; GOTO(kScan_LD_dd); }
+				'hl'	/ _W_	{ r1 = 2; GOTO(kScan_LD_dd); }
+				'sp'	/ _W_	{ r1 = 3; GOTO(kScan_LD_dd); }
+				*				{ ERROR(); }
+            */
+            break;
+		
+		case kScan_LD_dd:
+            /*!re2c
+				_s_+			{ NEXT(); }
+				','				{ GOTO(kScan_LD_dd_comma); }
+				*				{ ERROR(); }
+            */
+            break;
+			
+		case kScan_LD_dd_comma:
+            /*!re2c
+				*				{ ERROR(); }
+            */
+            break;
+			
+		
         case kScanAtArgs:
 
             break;
