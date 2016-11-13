@@ -34,4 +34,4 @@ install:
   - if [ "$CXX" = "clang++" ]; then export CXXFLAGS="-D__float128=void"; fi
   
 script: 
-  - cmake . && make all && make test
+  - mkdir build && cd build && cmake .. && make all && make test
