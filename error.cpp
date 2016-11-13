@@ -94,11 +94,7 @@ static void cerr_source_line(SourceLine* line = NULL, const char* cursor = NULL)
 }
 
 void cout_version() {
-    std::cout << Z80ASM_NAME << " version " <<
-        Z80ASM_VERSION_MAJOR << "." << Z80ASM_VERSION_MINOR << "." <<
-        Z80ASM_VERSION_PATCH << "." << Z80ASM_VERSION_BUILD << " " <<
-        Z80ASM_COPYRIGHT <<
-        std::endl << std::endl;
+	std::cout << Z80ASM_NAME << " version " << Z80ASM_VERSION << " " << Z80ASM_COPYRIGHT << std::endl << std::endl;
 }
 
 void cout_usage() {
@@ -110,6 +106,14 @@ void fatal_open_file(const std::string& filename) {
     std::perror(filename.c_str());
     exit(1);
 }
+
+void error_unexpected_end(SourceLine* line) {
+	cerr_location(line);
+	std::cerr << "error: unexpected end of block";
+	std::cerr << std::endl;
+	cerr_source_line(line);
+}
+
 
 void error_scan(SourceLine* line, const char* cursor) {
 	cerr_location(line, cursor);

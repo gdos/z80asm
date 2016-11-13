@@ -18,6 +18,7 @@ extern void cout_usage();
 extern void fatal_open_file(const std::string& filename);   // shows perror()
 
 // parsing errors
-extern void error_scan(SourceLine* line, const char* cursor);
+extern void error_unexpected_end(SourceLine* line = NULL);
+extern void error_scan(SourceLine* line = NULL, const char* cursor = NULL);
 
 #endif // ERROR_H_
