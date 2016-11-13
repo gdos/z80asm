@@ -11,16 +11,16 @@
 #include "symtab.h"
 #include "filesystem/path.h"
 
-Instr::Instr(SourceLine* wptr_line, Opcode* wptr_opcode)
+Instr::Instr(SourceLine* wptr_line, const Opcode* wptr_opcode)
     : wptr_line_(wptr_line), wptr_opcode_(wptr_opcode), address_(0) {
 }
 
-Instr::Instr(SourceLine* wptr_line, Opcode* wptr_opcode, Expr* expr1)
+Instr::Instr(SourceLine* wptr_line, const Opcode* wptr_opcode, Expr* expr1)
     : wptr_line_(wptr_line), wptr_opcode_(wptr_opcode), address_(0) {
     add_expr(expr1);
 }
 
-Instr::Instr(SourceLine* wptr_line, Opcode* wptr_opcode, Expr* expr1, Expr* expr2)
+Instr::Instr(SourceLine* wptr_line, const Opcode* wptr_opcode, Expr* expr1, Expr* expr2)
     : wptr_line_(wptr_line), wptr_opcode_(wptr_opcode), address_(0) {
     add_expr(expr1);
     add_expr(expr2);
@@ -83,7 +83,7 @@ ObjectFile::~ObjectFile() {
     modules_.clear();
 }
 
-void ObjectFile::add_opcode(SourceLine* line, Opcode* opcode) {
+void ObjectFile::add_opcode(SourceLine* line, const Opcode* opcode) {
     Instr* instr = new Instr(line, opcode);
     cur_module_->add_instr(instr);
 }

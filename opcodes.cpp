@@ -26,6 +26,11 @@ int Opcode::size() const {
 }
 
 // define all opcodes
+const Opcode* opc_nop() {
+	static Opcode opc(kOpcodeByte, 0x00, 4, "nop");
+	return &opc;
+}
+
 #define OPCODE(name, type, bytes, tstates, text) \
     Opcode name(type, bytes, tstates, text)
 #include "opcodes.inc"

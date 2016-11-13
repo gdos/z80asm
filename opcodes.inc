@@ -4,4 +4,4 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
-OPCODE(opc_nop, kOpcodeByte, 0x00, 4, "nop");
+//OPCODE(opc_nop, kOpcodeByte, 0x00, 4, "nop");

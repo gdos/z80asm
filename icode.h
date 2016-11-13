@@ -16,18 +16,18 @@
 // represent one instruction
 class Instr {
 public:
-    Instr(SourceLine* wptr_line, Opcode* wptr_opcode);
-    Instr(SourceLine* wptr_line, Opcode* wptr_opcode, Expr* expr1);
-    Instr(SourceLine* wptr_line, Opcode* wptr_opcode, Expr* expr1, Expr* expr2);
+    Instr(SourceLine* wptr_line, const Opcode* wptr_opcode);
+    Instr(SourceLine* wptr_line, const Opcode* wptr_opcode, Expr* expr1);
+    Instr(SourceLine* wptr_line, const Opcode* wptr_opcode, Expr* expr1, Expr* expr2);
     virtual ~Instr();
 
     void add_expr(Expr* expr);
 
 private:
-    SourceLine* wptr_line_;
-    Opcode*     wptr_opcode_;
-    int         address_;           // address after link step
-    std::vector<Expr*> exprs_;      // owns expressions
+    SourceLine*	wptr_line_;
+    const Opcode*		wptr_opcode_;
+    int					address_;		// address after link step
+    std::vector<Expr*>	exprs_;			// owns expressions
 };
 
 // represent one section of code
@@ -64,7 +64,7 @@ public:
     ObjectFile(const std::string& obj_filename);
     virtual ~ObjectFile();
 
-    void add_opcode(SourceLine* line, Opcode* opcode);
+    void add_opcode(SourceLine* line, const Opcode* opcode);
     void write();                       // write object file
 
 private:

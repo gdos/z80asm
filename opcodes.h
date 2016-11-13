@@ -28,7 +28,10 @@ private:
     std::string text_;          // disassembly
 };
 
+
 // declare all opcodes
+extern const Opcode* opc_nop();
+
 #define OPCODE(name, type, bytes, tstates, text) \
     extern Opcode name
 #include "opcodes.inc"
