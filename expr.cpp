@@ -5,56 +5,21 @@
 //-----------------------------------------------------------------------------
 
 #include "expr.h"
+#include <cassert>
 
-Expr::Expr(ExprType type)
-    : type_(type) {
-}
-
-Expr::~Expr() {
-}
-
-ConstExpr::ConstExpr(int value)
-    : Expr(kConstExpr), value_(value) {
-}
-
-ConstExpr::~ConstExpr() {
-}
-
-SymbolExpr::SymbolExpr(Symbol* wptr_symbol)
-    : Expr(kSymbolExpr), wptr_symbol_(wptr_symbol) {
-}
-
-SymbolExpr::~SymbolExpr() {
-}
-
-AryExpr::AryExpr(OpType op_type)
-    : Expr(kAryExpr), op_type_(op_type) {
-}
-
-AryExpr::AryExpr(OpType op_type, Expr* arg1)
-    : Expr(kAryExpr), op_type_(op_type) {
-    add_arg(arg1);
-}
-
-AryExpr::AryExpr(OpType op_type, Expr* arg1, Expr* arg2)
-    : Expr(kAryExpr), op_type_(op_type) {
-    add_arg(arg1);
-    add_arg(arg2);
-}
-
-AryExpr::AryExpr(OpType op_type, Expr* arg1, Expr* arg2, Expr* arg3)
-    : Expr(kAryExpr), op_type_(op_type) {
-    add_arg(arg1);
-    add_arg(arg2);
-    add_arg(arg3);
-}
-
-AryExpr::~AryExpr() {
-    for (std::vector<Expr*>::iterator it = args_.begin(); it != args_.end(); ++it)
-        delete *it;
-    args_.clear();
-}
-
-void AryExpr::add_arg(Expr* arg) {
-    args_.push_back(arg);
+// exponentiation by squaring
+Result Expr::power(int base, int exp) {
+	int result = 1;
+	if (exp < 0) {
+		return Result(0);
+	}
+	else {
+		while (exp) {
+			if (exp & 1)
+				result *= base;
+			exp >>= 1;
+			base *= base;
+		}
+		return Result(result);
+	}
 }

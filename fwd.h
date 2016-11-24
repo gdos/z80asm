@@ -6,15 +6,30 @@
 #ifndef FWD_H_
 #define FWD_H_
 
+class Env;
+class Expr;
 class Instr;
-class Section;
 class Module;
 class ObjectFile;
-class Symbol;
-class SymbolTable;
-class Expr;
-struct SourceLine;
+class Opcode;
+class Scanner;
+class Section;
 class SourceFile;
 class SourceStack;
+class Symbol;
+class SymbolTable;
+struct SrcFile;
+struct SrcLine;
+struct SrcPos;
+
+class noncopyable {
+public:
+	noncopyable() {}
+	virtual ~noncopyable() {}
+
+private:
+	noncopyable(const noncopyable&);
+	noncopyable& operator=(const noncopyable&);
+};
 
 #endif // FWD_H_
