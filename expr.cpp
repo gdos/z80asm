@@ -7,6 +7,10 @@
 #include "expr.h"
 #include <cassert>
 
+// TODO: simplify expressions to tranform LABEL1-LABEL2 into a constant
+// TODO: handle symbols
+// TODO: handle address labels
+
 // exponentiation by squaring
 Result Expr::power(int base, int exp) {
 	int result = 1;

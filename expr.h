@@ -7,24 +7,9 @@
 #define EXPR_H_
 
 #include "fwd.h"
+#include "result.h"
 #include <cassert>
 #include <cstdlib>
-
-// expression result
-struct Result {
-	// error masks
-	static const unsigned OK = 0;
-	static const unsigned DIVIDE_ZERO = 1;
-	static const unsigned UNDEFINED_SYMBOL = 2;
-	
-	// data
-	int			value;
-	unsigned	error;	// bit-mask
-
-	// constructor
-	Result(int value = 0, unsigned error = OK)
-		: value(value), error(error) {}
-};
 
 // base expression class
 class Expr : noncopyable {
@@ -67,18 +52,24 @@ public:
 
 	Result operator()() const { 
 		int args[NR];
+		Result result;
+		unsigned error = Result::OK;
 
 		// compute sub-expressions
 		for (int i = 0; i < NR; i++) {
-			Result result = (*args_[i])();
-			if (result.error != Result::OK)
-				return Result(0, result.error);
-			else
-				args[i] = result.value;
+			result = (*args_[i])();
+			args[i] = result.value;
+			error = error | result.error;
 		}
 
 		// compute expression
-		return compute(args);
+		result = compute(args);
+		error = error | result.error;
+
+		if (error != Result::OK)
+			return Result(0, error);
+		else
+			return result;
 	}
 
 protected:
