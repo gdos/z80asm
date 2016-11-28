@@ -11,10 +11,7 @@
 #define NUM(x)			new NumberExpr(x)
 #define T_OK(VALUE)		r = (*e)(); IS(r.value, VALUE); IS(r.error, Result::OK)
 #define T_ERR(ERR)		r = (*e)(); IS(r.value, 0); IS(r.error, ERR)
-#define T_FUNC(CLASS,A,B,RES)	e = new CLASS(NUM(A), NUM(B)); T_OK(RES); delete e; \
-								e = new CLASS(new DivideExpr(NUM(A), NUM(0)), NUM(B)); T_ERR(Result::DIVIDE_ZERO); delete e; \
-								e = new CLASS(NUM(A), new DivideExpr(NUM(B), NUM(0)), NUM(B)); T_ERR(Result::DIVIDE_ZERO); delete e; \
-								e = new CLASS(new DivideExpr(NUM(A), NUM(0)), new DivideExpr(NUM(B), NUM(0)), NUM(B)); T_ERR(Result::DIVIDE_ZERO); delete e
+#define T_FUNC(CLASS,A,B,RES)	e = new CLASS(NUM(A), NUM(B)); T_OK(RES); delete e
 
 int main() {
 	START_TESTING();
@@ -110,9 +107,13 @@ int main() {
 
 	T_FUNC(DivideExpr, 12, 4, 3);
 	T_FUNC(DivideExpr, 11, 4, 2);
+	e = new DivideExpr(NUM(12), NUM(0)); T_ERR(Result::DIVIDE_ZERO); delete e;
+	e = new AddExpr(NUM(17), new DivideExpr(NUM(12), NUM(0))); T_ERR(Result::DIVIDE_ZERO); delete e;
 
 	T_FUNC(ModuloExpr, 12, 4, 0);
 	T_FUNC(ModuloExpr, 11, 4, 3);
+	e = new ModuloExpr(NUM(12), NUM(0)); T_ERR(Result::DIVIDE_ZERO); delete e;
+	e = new AddExpr(NUM(17), new ModuloExpr(NUM(12), NUM(0))); T_ERR(Result::DIVIDE_ZERO); delete e;
 
 	T_FUNC(PowerExpr, 3, 3, 27);
 
@@ -127,6 +128,19 @@ int main() {
 	e = new LogicalNotExpr(NUM(33)); T_OK(0); delete e;
 
 	e = new BinaryAndExpr(new BinaryNotExpr(NUM(0x55)), NUM(0xFF)); T_OK(0xAA); delete e;
+
+	// test cloning
+	NumberExpr* n1 = NUM(21);
+	NumberExpr* n2 = NUM(32);
+	e = new AddExpr(n1, n2); r = (*e)(); IS(r.value, 53); IS(r.error, Result::OK);
+	Expr* e2 = e->clone(); r = (*e2)(); IS(r.value, 53); IS(r.error, Result::OK);
+
+	n1->set(1); n2->set(2);
+	r = (*e)(); IS(r.value, 3); IS(r.error, Result::OK);
+	r = (*e2)(); IS(r.value, 53); IS(r.error, Result::OK);
+
+	delete e;		// deletes also n1 and n2
+	delete e2;
 
 	DONE_TESTING();
 }

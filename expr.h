@@ -17,6 +17,7 @@ public:
 	Expr() {}
 	virtual ~Expr() {}
 	virtual Result operator()() const = 0;	// evaluate
+	virtual Expr* clone() const = 0;		// make a copy
 
 	// integer power function
 	static Result power(int base, int exp);
@@ -27,15 +28,20 @@ class NumberExpr : public Expr {
 public:
 	NumberExpr(int value = 0) : value_(value) {}
 	Result operator()() const { return Result(value_); }
+	NumberExpr* clone() const { return new NumberExpr(value_); }
+	void set(int value) { value_ = value; }
 protected:
 	int value_;
 };
 
 // N-ary function, N=1..3
+typedef Result(*compute_t)(int args[]);			// compute function
+
 template<int NR>
 class NaryExpr : public Expr {
 public:
-	NaryExpr(Expr* a0 = NULL, Expr* a1= NULL, Expr* a2 = NULL) {
+	NaryExpr(compute_t compute, Expr* a0 = NULL, Expr* a1 = NULL, Expr* a2 = NULL) 
+		: compute_(compute) {
 		switch (NR) {
 		case 3: assert(a2); args_[2] = a2; // fall through
 		case 2: assert(a1); args_[1] = a1; // fall through
@@ -48,6 +54,16 @@ public:
 	virtual ~NaryExpr() {
 		for (int i = 0; i < NR; i++)
 			delete args_[i];
+	}
+
+	NaryExpr<NR>* clone() const {
+		switch (NR) {
+		case 3: return new NaryExpr<NR>(compute_, args_[0]->clone(), args_[1]->clone(), args_[2]->clone());
+		case 2: return new NaryExpr<NR>(compute_, args_[0]->clone(), args_[1]->clone());
+		case 1: return new NaryExpr<NR>(compute_, args_[0]->clone());
+		default:
+			assert(0); return NULL;
+		}
 	}
 
 	Result operator()() const { 
@@ -63,7 +79,7 @@ public:
 		}
 
 		// compute expression
-		result = compute(args);
+		result = compute_(args);
 		error = error | result.error;
 
 		if (error != Result::OK)
@@ -76,15 +92,17 @@ protected:
 	Expr *args_[NR];
 
 private:
-	virtual Result compute(int args[]) const = 0;
+	compute_t compute_;
 };
 
 
 #define DEFINE_CLASS(NAME, NR, EXPR) \
 	class NAME : public NaryExpr<NR> { \
-	public: NAME(Expr* a0 = NULL, Expr* a1= NULL, Expr* a2 = NULL) \
-			: NaryExpr<NR>(a0, a1, a2) {} \
-	private: Result compute(int args[]) const { return EXPR; } \
+	private: \
+		static Result compute(int args[]) { return EXPR; } \
+	public: \
+		NAME(Expr* a0 = NULL, Expr* a1 = NULL, Expr* a2 = NULL) \
+			: NaryExpr<NR>(compute, a0, a1, a2) {} \
 	}
 
 DEFINE_CLASS(ConditionExpr,		3, Result(args[0] ? args[1] : args[2]));
