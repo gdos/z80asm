@@ -7,6 +7,7 @@
 #include "memcheck.h"
 #include "expr.h"
 #include "test.h"
+#include "symbol.h"
 #include <iostream>
 
 #define NUM(x)			new NumberExpr(x)
@@ -14,14 +15,40 @@
 #define T_ERR(ERR)		r = (*e)(); IS(r.value, 0); IS(r.error, ERR)
 #define T_FUNC(CLASS,A,B,RES)	e = new CLASS(NUM(A), NUM(B)); T_OK(RES); delete e
 
+class NumberExprRW : public NumberExpr {
+public:
+	NumberExprRW(int value = 0) : NumberExpr(value) {}
+	virtual ~NumberExprRW() {}
+	void set(int value) { value_ = value; }
+};
+
 int main() {
 	START_TESTING();
 	Expr* e;
 	Result r;
 
+	// NumberExpr
 	e = NUM(4);
 	T_OK(4);
 	delete e;
+
+	// SymbolExpr
+	Symbol* sym = new Symbol("a1", new ConstantValue(new NumberExpr(46)));
+	e = new SymbolExpr(sym);
+	T_OK(46);
+	delete e;
+	r = (*sym)(); 
+	IS(r.value, 46); 
+	IS(r.error, Result::OK);
+	delete sym;
+
+	// detect recursion
+	sym = new Symbol("a1", new ConstantValue(new NumberExpr(46)));
+	e = new SymbolExpr(sym);
+	T_OK(46);
+	sym->set_value(new ConstantValue(e));
+	T_ERR(Result::RECURSIVE_SYMBOL);
+	delete sym;
 
 	e = new AddExpr(new MultiplyExpr(NUM(3), NUM(4)), new MultiplyExpr(NUM(2), NUM(5)));
 	T_OK(22);
@@ -131,8 +158,8 @@ int main() {
 	e = new BinaryAndExpr(new BinaryNotExpr(NUM(0x55)), NUM(0xFF)); T_OK(0xAA); delete e;
 
 	// test cloning
-	NumberExpr* n1 = NUM(21);
-	NumberExpr* n2 = NUM(32);
+	NumberExprRW* n1 = static_cast<NumberExprRW*>(NUM(21));
+	NumberExprRW* n2 = static_cast<NumberExprRW*>(NUM(32));
 	e = new AddExpr(n1, n2); r = (*e)(); IS(r.value, 53); IS(r.error, Result::OK);
 	Expr* e2 = e->clone(); r = (*e2)(); IS(r.value, 53); IS(r.error, Result::OK);
 

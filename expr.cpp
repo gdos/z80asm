@@ -6,11 +6,9 @@
 
 #include "memcheck.h"
 #include "expr.h"
-#include <cassert>
+#include "symbol.h"
 
 // TODO: simplify expressions to tranform LABEL1-LABEL2 into a constant
-// TODO: handle symbols
-// TODO: handle address labels
 
 // exponentiation by squaring
 Result Expr::power(int base, int exp) {
@@ -27,4 +25,29 @@ Result Expr::power(int base, int exp) {
 		}
 		return Result(result);
 	}
+}
+
+SymbolExpr::SymbolExpr(Symbol* symbol)
+	: symbol_(symbol) {
+}
+
+SymbolExpr::~SymbolExpr() {
+	// do not delete weak poiter symbol_
+}
+
+Result SymbolExpr::operator()() const {
+	Result result;
+	int level = symbol_->reserve();
+	if (level == 1) {		// can recurse
+		result = (*symbol_)();
+	}
+	else {
+		result = Result(0, Result::RECURSIVE_SYMBOL);
+	}
+	level = symbol_->release();
+	return result;
+}
+
+Expr* SymbolExpr::clone() const {
+	return new SymbolExpr(symbol_);
 }

@@ -30,9 +30,21 @@ public:
 	NumberExpr(int value = 0) : value_(value) {}
 	virtual Result operator()() const { return Result(value_); }
 	virtual NumberExpr* clone() const { return new NumberExpr(value_); }
-	void set(int value) { value_ = value; }
+
 protected:
 	int value_;
+};
+
+// symbol leaf
+class SymbolExpr : public Expr {
+public:
+	SymbolExpr(Symbol* symbol);
+	virtual ~SymbolExpr();
+	virtual Result operator()() const;
+	virtual Expr* clone() const;
+
+private:
+	Symbol* symbol_;			// weak pointer
 };
 
 // N-ary function, N=1..3
@@ -132,16 +144,5 @@ DEFINE_CLASS(BinaryNotExpr,		1, Result(~ args[0]));
 
 #undef DEFINE_CLASS
 
-
-#if 0
-class SymbolExpr : public Expr {
-public:
-    SymbolExpr(Symbol* wptr_symbol);
-    virtual ~SymbolExpr();
-
-private:
-    Symbol* wptr_symbol_;
-};
-#endif
 
 #endif // EXPR_H_
