@@ -6,6 +6,7 @@
 #ifndef EXPR_H_
 #define EXPR_H_
 
+#include "memcheck.h"
 #include "fwd.h"
 #include "result.h"
 #include <cassert>
@@ -27,8 +28,8 @@ public:
 class NumberExpr : public Expr {
 public:
 	NumberExpr(int value = 0) : value_(value) {}
-	Result operator()() const { return Result(value_); }
-	NumberExpr* clone() const { return new NumberExpr(value_); }
+	virtual Result operator()() const { return Result(value_); }
+	virtual NumberExpr* clone() const { return new NumberExpr(value_); }
 	void set(int value) { value_ = value; }
 protected:
 	int value_;
@@ -56,7 +57,7 @@ public:
 			delete args_[i];
 	}
 
-	NaryExpr<NR>* clone() const {
+	virtual NaryExpr<NR>* clone() const {
 		switch (NR) {
 		case 3: return new NaryExpr<NR>(compute_, args_[0]->clone(), args_[1]->clone(), args_[2]->clone());
 		case 2: return new NaryExpr<NR>(compute_, args_[0]->clone(), args_[1]->clone());
@@ -66,7 +67,7 @@ public:
 		}
 	}
 
-	Result operator()() const { 
+	virtual Result operator()() const { 
 		int args[NR];
 		Result result;
 		unsigned error = Result::OK;
