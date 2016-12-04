@@ -6,6 +6,7 @@
 #ifndef T_TEST_H_
 #define T_TEST_H_
 
+#include "memcheck.h"
 #include "taptest.h"
 
 #include <cstdio>

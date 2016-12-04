@@ -4,6 +4,7 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
+#include "memcheck.h"
 #include "util.h"
 
 // getline function that handles all three line endings ("\r", "\n" and "\r\n"):

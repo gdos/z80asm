@@ -4,6 +4,7 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
+#include "memcheck.h"
 #include "expr.h"
 #include "test.h"
 #include <iostream>

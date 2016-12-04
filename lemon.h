@@ -6,6 +6,7 @@
 #ifndef LEMON_H_
 #define LEMON_H_
 
+#include "memcheck.h"
 #include <cstdlib>
 
 class Parser;

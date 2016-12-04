@@ -6,6 +6,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include "memcheck.h"
 #include <string>
 #include <fstream>
 

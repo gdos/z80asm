@@ -6,6 +6,8 @@
 #ifndef FWD_H_
 #define FWD_H_
 
+#include "memcheck.h"
+
 class Env;
 class Expr;
 class Instr;
