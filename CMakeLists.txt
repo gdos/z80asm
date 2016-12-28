@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -U__STRICT_ANSI__ -D_CRT_SECU
 # The version number.
 #-----------------------------------------------------------------------------
 set(Z80ASM_NAME         "z80asm")
-set(Z80ASM_VERSION 		"1.0.0.0")
+set(Z80ASM_VERSION 		"1.0.0")
 set(Z80ASM_COPYRIGHT    "(c) Paulo Custodio 2015-2016")
 
 configure_file(
@@ -122,7 +122,7 @@ add_test(z80asm_version
 )
 set_tests_properties(z80asm_version 
 	PROPERTIES 	PASS_REGULAR_EXPRESSION 
-    "${Z80ASM_NAME} version ${Z80ASM_VERSION}"    # copyright has (c) which is interpreted as regexp subexpression and fails match
+    "${Z80ASM_NAME} ${Z80ASM_VERSION}"    # copyright has (c) which is interpreted as regexp subexpression and fails match
 )
 
 file(GLOB EXE_TESTS 
