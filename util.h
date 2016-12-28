@@ -8,6 +8,7 @@
 
 #include "memcheck.h"
 #include <string>
+#include <vector>
 #include <fstream>
 
 namespace util {
@@ -32,6 +33,9 @@ extern bool file_exists(const std::string& file);
 extern bool is_file(const std::string& file);
 extern bool is_dir(const std::string& file);
 extern int  file_size(const std::string& file);		// -1 on error
+
+// search for file in a list of directories
+extern std::string file_search(const std::string& file, const std::vector<std::string>& dirs);
 
 }; // namespace
 

@@ -176,5 +176,23 @@ bool is_dir(const std::string& file) {
 #endif
 }
 
+std::string file_search(const std::string& file, const std::vector<std::string>& dirs) {
+
+	if (is_file(file))
+		return file;
+
+	for (std::vector<std::string>::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {
+		std::string dir = *it;
+		if (is_dir(dir)) {
+			std::string path = dir + "/" + file;
+			if (is_file(path))
+				return path;
+		}
+	}
+
+	// not found, return original
+	return file;
+}
+
 }; // namespace
 

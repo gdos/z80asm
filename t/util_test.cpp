@@ -152,6 +152,50 @@ void test_stat() {
 	OK(!util::file_exists("test.1"));
 }
 
+void test_search() {
+	util::mkdir("test.1");
+	util::mkdir("test.1/a");
+	util::mkdir("test.1/b");
+
+	delete_test_file("f1.asm");
+	delete_test_file("f2.asm");
+
+	create_test_file("test.1/a/f1.asm", "");
+
+	create_test_file("test.1/b/f1.asm", "");
+	create_test_file("test.1/b/f2.asm", "");
+
+	std::vector<std::string> dirs;
+	std::string file;
+
+	file = util::file_search("f1.asm", dirs);
+	IS(file, "f1.asm");	
+	file = util::file_search("f2.asm", dirs);
+	IS(file, "f2.asm");
+
+	dirs.push_back("test.1/a");
+
+	file = util::file_search("f1.asm", dirs);
+	IS(file, "test.1/a/f1.asm");
+	file = util::file_search("f2.asm", dirs);
+	IS(file, "f2.asm");
+
+	dirs.push_back("test.1/b");
+
+	file = util::file_search("f1.asm", dirs);
+	IS(file, "test.1/a/f1.asm");
+	file = util::file_search("f2.asm", dirs);
+	IS(file, "test.1/b/f2.asm");
+
+	delete_test_file("test.1/a/f1.asm");
+	delete_test_file("test.1/b/f1.asm");
+	delete_test_file("test.1/b/f2.asm");
+	util::rmdir("test.1/a");
+	util::rmdir("test.1/b");
+	util::rmdir("test.1");
+	OK(!util::file_exists("test.1"));
+}
+
 int main()
 {
 	START_TESTING();
@@ -159,5 +203,6 @@ int main()
 	test_spew_slurp();
 	test_mk_rm();
 	test_stat();
+	test_search();
 	DONE_TESTING();
 }
