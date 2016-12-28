@@ -14,19 +14,19 @@
 		OK(file.good())
 
 #define T_READ(text) \
-		OK(safe_getline(file, line).good()); IS(line, text)
+		OK(util::getline(file, line).good()); IS(line, text)
 
 #define T_EOF() \
-		OK(!safe_getline(file, line).good()); IS(line, ""); \
-		OK(!safe_getline(file, line).good()); IS(line, ""); \
-		OK(!safe_getline(file, line).good()); IS(line, "")
+		OK(!util::getline(file, line).good()); IS(line, ""); \
+		OK(!util::getline(file, line).good()); IS(line, ""); \
+		OK(!util::getline(file, line).good()); IS(line, "")
 
 #define T_DELETE() \
 	OK(file.eof()); \
 	file.close(); \
 	delete_test_file("test.1")
 
-void test_safe_getline()
+void test_getline()
 {
 	std::string line;
 	std::ifstream file;
@@ -60,9 +60,104 @@ void test_safe_getline()
 	T_CREATE("f1.asm\n\r"); T_READ("f1.asm"); T_READ(""); T_EOF(); T_DELETE();
 }
 
+void test_spew_slurp() {
+	std::string text;
+
+	delete_test_file("test.1");
+
+	util::spew("test.1", "");
+	IS(util::file_size("test.1"), 0);
+	text = util::slurp("test.1");
+	IS(text, "");
+
+	util::spew("test.1", "1");
+	IS(util::file_size("test.1"), 1);
+	text = util::slurp("test.1");
+	IS(text, "1\n");
+
+	util::spew("test.1", "1\n");
+	IS(util::file_size("test.1"), 2);
+	text = util::slurp("test.1");
+	IS(text, "1\n");
+
+	util::spew("test.1", "1\n2");
+	IS(util::file_size("test.1"), 3);
+	text = util::slurp("test.1");
+	IS(text, "1\n2\n");
+
+	util::spew("test.1", "1\n2\n");
+	IS(util::file_size("test.1"), 4);
+	text = util::slurp("test.1");
+	IS(text, "1\n2\n");
+
+	delete_test_file("test.1");
+
+	util::mkdir("test.1");
+	OK(util::is_dir("test.1"));
+	util::spew("test.1", "");	// expect perror
+	util::rmdir("test.1");
+	OK(!util::file_exists("test.1"));
+}
+
+void test_mk_rm() {
+	std::string text;
+
+	util::rmdir("test.1");
+	OK(!util::file_exists("test.1"));
+
+	util::mkdir("test.1");
+	OK(util::is_dir("test.1"));
+
+	util::mkdir("test.1");
+	OK(util::is_dir("test.1"));
+
+	create_test_file("test.1/hello.txt", "hello");
+	OK(util::is_file("test.1/hello.txt"));
+	text = util::slurp("test.1/hello.txt");
+	IS(text, "hello\n");
+
+	util::remove("test.1/hello.txt");
+	OK(!util::file_exists("test.1/hello.txt"));
+
+	util::remove("test.1/hello.txt");
+	OK(!util::file_exists("test.1/hello.txt"));
+
+	util::rmdir("test.1");
+	OK(!util::file_exists("test.1"));
+
+	util::rmdir("test.1");
+	OK(!util::file_exists("test.1"));
+}
+
+void test_stat() {
+	create_test_file("test.1", "hello");
+	OK(util::file_exists("test.1"));
+	OK(util::is_file("test.1"));
+	OK(!util::is_dir("test.1"));
+	IS(util::file_size("test.1"), 5);
+
+	delete_test_file("test.1");
+	OK(!util::file_exists("test.1"));
+	OK(!util::is_file("test.1"));
+	OK(!util::is_dir("test.1"));
+	IS(util::file_size("test.1"), -1);	// expect perror
+
+	util::mkdir("test.1");
+	OK(util::file_exists("test.1"));
+	OK(!util::is_file("test.1"));
+	OK(util::is_dir("test.1"));
+	IS(util::file_size("test.1"), -1);
+
+	util::rmdir("test.1");
+	OK(!util::file_exists("test.1"));
+}
+
 int main()
 {
 	START_TESTING();
-	test_safe_getline();
+	test_getline();
+	test_spew_slurp();
+	test_mk_rm();
+	test_stat();
 	DONE_TESTING();
 }

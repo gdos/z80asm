@@ -7,10 +7,34 @@
 #include "memcheck.h"
 #include "util.h"
 
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+
+#ifdef _WIN32
+#include <direct.h>
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+#include <sys/stat.h>
+
+
+namespace util {
+
+static bool check_result_perror(int result, const std::string& file) {
+	if (result != 0) {
+		std::perror(file.c_str());
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
 // getline function that handles all three line endings ("\r", "\n" and "\r\n"):
 // http://stackoverflow.com/questions/6089231/getting-std-ifstream-to-handle-lf-cr-and-crlf
-std::istream& safe_getline(std::istream& is, std::string& t)
-{
+std::istream& getline(std::istream& is, std::string& t) {
 	t.clear();
 
 	// The characters in the stream are read one-by-one using a std::streambuf.
@@ -42,4 +66,115 @@ std::istream& safe_getline(std::istream& is, std::string& t)
 		}
 	}
 }
+
+void spew(const std::string& file, const std::string& text) {
+	std::ofstream ofs(file.c_str(), std::ios::out | std::ios::binary);
+	if (!ofs.good()) {
+		std::perror(file.c_str());
+	}
+	else {
+		ofs << text;
+		ofs.close();
+	}
+}
+
+std::string slurp(const std::string& file) {
+	std::string ret, line;
+
+	std::ifstream ifs(file.c_str(), std::ios::binary);
+	if (!ifs.good()) {
+		std::perror(file.c_str());
+		return ret;
+	}
+	else {
+		while (!getline(ifs, line).eof()) {
+			ret.append(line);
+			ret.append("\n");
+		}
+		return ret;
+	}
+}
+
+bool mkdir(const std::string& directory) {
+	if (is_dir(directory))
+		return true;
+
+#ifdef _WIN32
+	return check_result_perror(_mkdir(directory.c_str()), directory);
+#else
+	return check_result_perror(::mkdir(directory.c_str(), 0733), directory);
+#endif
+}
+
+bool rmdir(const std::string& directory) {
+	if (!file_exists(directory))
+		return true;
+
+#ifdef _WIN32
+	return check_result_perror(_rmdir(directory.c_str()), directory);
+#else
+	return check_result_perror(::rmdir(directory.c_str()), directory);
+#endif
+}
+
+bool remove(const std::string& file) {
+	if (!file_exists(file))
+		return true;
+
+#ifdef _WIN32
+	return check_result_perror(_unlink(file.c_str()), file);
+#else
+	return check_result_perror(unlink(file.c_str()), file);
+#endif
+}
+
+bool file_exists(const std::string& file) {
+	struct stat sb;
+	return stat(file.c_str(), &sb) == 0;
+}
+
+int file_size(const std::string& file) {
+	if (!is_file(file))
+		return -1;
+
+	struct stat sb;
+	if (stat(file.c_str(), &sb) != 0) {
+		std::perror(file.c_str());
+		return -1;
+	}
+	else {
+		return static_cast<int>(sb.st_size);
+	}
+}
+
+bool is_file(const std::string& file) {
+#ifdef _WIN32
+	DWORD attr = GetFileAttributesA(file.c_str());
+	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) == 0;
+#else
+	struct stat sb;
+	if (stat(file.c_str(), &sb) != 0)
+		return false;
+	else
+		return S_ISREG(sb.st_mode);
+#endif
+}
+
+bool is_dir(const std::string& file) {
+#ifdef _WIN32
+	DWORD result = GetFileAttributesA(file.c_str());
+	if (result == INVALID_FILE_ATTRIBUTES)
+		return false;
+	else
+		return (result & FILE_ATTRIBUTE_DIRECTORY) != 0;
+#else
+	struct stat sb;
+	if (stat(file.c_str(), &sb) != 0)
+		return false;
+	else
+		return S_ISDIR(sb.st_mode);
+#endif
+}
+
+}; // namespace
 
