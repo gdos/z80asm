@@ -37,6 +37,12 @@ extern int  file_size(const std::string& file);		// -1 on error
 // search for file in a list of directories
 extern std::string file_search(const std::string& file, const std::vector<std::string>& dirs);
 
+// extract dirname, filename, basename, extension
+extern std::string dirname(const std::string& path);	// without ending slash
+extern std::string filename(const std::string& path);	// includes extension
+extern std::string basename(const std::string& path);	// without extension
+extern std::string extension(const std::string& path);	// extension including "."
+
 }; // namespace
 
 #endif // UTIL_H_

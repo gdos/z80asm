@@ -196,6 +196,34 @@ void test_search() {
 	OK(!util::file_exists("test.1"));
 }
 
+#define T_PATH(file_, dirname_, filename_, basename_, extension_) \
+	s = util::dirname(file_); IS(s, dirname_); \
+	s = util::filename(file_); IS(s, filename_); \
+	s = util::basename(file_); IS(s, basename_); \
+	s = util::extension(file_); IS(s, extension_)
+
+void test_path() {
+	std::string s;
+
+	T_PATH("file", ".", "file", "file", "");
+	T_PATH("dir/file", "dir", "file", "file", "");
+	T_PATH("dir\\file", "dir", "file", "file", "");
+	T_PATH("dir//file", "dir", "file", "file", "");
+	T_PATH("dir\\\\file", "dir", "file", "file", "");
+
+	T_PATH("dir/", "dir", "", "", "");
+	T_PATH("dir\\", "dir", "", "", "");
+	T_PATH("dir//", "dir", "", "", "");
+	T_PATH("dir\\\\", "dir", "", "", "");
+
+	T_PATH(".", ".", ".", ".", "");
+	T_PATH(".rc", ".", ".rc", ".rc", "");
+	T_PATH("dir/.rc", "dir", ".rc", ".rc", "");
+	T_PATH("dir.1/.rc", "dir.1", ".rc", ".rc", "");
+	T_PATH("rc.x", ".", "rc.x", "rc", ".x");
+	T_PATH("dir.1/rc.x", "dir.1", "rc.x", "rc", ".x");
+}
+
 int main()
 {
 	START_TESTING();
@@ -204,5 +232,6 @@ int main()
 	test_mk_rm();
 	test_stat();
 	test_search();
+	test_path();
 	DONE_TESTING();
 }

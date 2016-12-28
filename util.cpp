@@ -194,5 +194,40 @@ std::string file_search(const std::string& file, const std::vector<std::string>&
 	return file;
 }
 
+std::string dirname(const std::string& path) {
+	std::string::size_type p = path.find_last_of("/\\");
+	if (p == std::string::npos) {
+		return ".";
+	}
+	else {
+		std::string dir = path.substr(0, p);
+		while (dir.size() > 0 && (p = dir.find_last_of("/\\")) == dir.size() - 1)
+			dir.resize(p);	// remove end slash
+		return dir;
+	}
+}
+
+std::string filename(const std::string& path) {
+	return path.substr(path.find_last_of("/\\") + 1);
+}
+
+std::string basename(const std::string& path) {
+	std::string file = filename(path);
+	std::string::size_type p = file.find_last_of('.');
+	if (p == std::string::npos || p == 0)
+		return file;
+	else
+		return file.substr(0, p);
+}
+
+std::string extension(const std::string& path) {
+	std::string file = filename(path);
+	std::string::size_type p = file.find_last_of('.');
+	if (p == std::string::npos || p == 0)
+		return "";
+	else
+		return file.substr(p);
+}
+
 }; // namespace
 
