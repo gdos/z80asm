@@ -6,6 +6,8 @@
 
 #include "memcheck.h"
 
+#if defined(_MSC_VER) && defined(_DEBUG)
+
 bool MemoryLeaksDumper::inited = false;
 
 #define REPORT_STDERR(reportType)   \
@@ -19,8 +21,13 @@ MemoryLeaksDumper::MemoryLeaksDumper() {
 		REPORT_STDERR(_CRT_ERROR);
 		REPORT_STDERR(_CRT_ASSERT);
 
+		// break on alloc Nr xx
+		//_crtBreakAlloc = 351;
+
 		inited = true;
 	}
 }
 
 #undef REPORT_STDERR
+
+#endif
