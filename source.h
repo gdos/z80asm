@@ -6,61 +6,59 @@
 #ifndef SOURCE_H_
 #define SOURCE_H_
 
+#include "memcheck.h"
 #include "fwd.h"
-
 #include <fstream>
 #include <string>
 #include <vector>
 
-class SourceFile;
-
-// input source line
-struct SourceLine {
+class Source : noncopyable {
 public:
-	SourceLine(SourceFile* wptr_source_, int line_num_, std::string text_)
-		: wptr_source(wptr_source_), line_num(line_num_), text(text_), col_num(0) {}
+	Source(bool keep_lines = false);
+	virtual ~Source();
 
-	SourceFile* wptr_source;	
-	int	        line_num;
-	std::string	text;		// empty if keep_lines = false
-    int         col_num;    // set to zero on each new line read, used by scanner to remember last scanned token
+	bool has_file(const std::string& filename);		// is the given file in the open stack?
+	bool open(const std::string& filename);			// open a new file to read at this point
+	SrcLine* getline();								// read next line, NULL on end of input
+
+private:
+	std::vector<SrcFile*> files_;		// has all read files
+	std::vector<SrcLine*> lines_;		// has all read lines
+	std::vector<SrcFile*> stack_;		// weak pointer to open stack of files
+	bool keep_lines_;					// if false(default), only last line is preserved
 };
 
-// input file
-class SourceFile {
+class SrcFile : noncopyable {
 public:
-	SourceFile(const std::string& filename, bool keep_lines = false);		// keep previous lines?
-	virtual ~SourceFile();
+	SrcFile(const std::string& filename);
+	~SrcFile();
 
 	const std::string& filename() const { return filename_; }
 	bool good() const { return ifs_.good(); }
 
-	// read new line, allocate internal SourceLine, return pointer to it; return NULL on end of file
-	SourceLine* getline();
+	SrcLine* getline();		// read new allocated line; return NULL on end of file
 
 private:
 	std::string		filename_;
 	std::ifstream	ifs_;
-	bool			keep_lines_;		// if false(default), only last line is preserved
-	std::vector<SourceLine*> lines_;
+	int				line_nr_;
 };
 
-// stack of input files to read includes
-class SourceStack {
+class SrcLine {
 public:
-	SourceStack(bool keep_lines = false);				// keep previous lines?
-	virtual ~SourceStack();
+	SrcLine(SrcFile* src_file, int line_nr, std::string text);	
+	~SrcLine();
 
-	bool has_file(const std::string& filename);			// is the given file in the open stack?
-	bool open(const std::string& filename);				// open a new file to read at this point
-
-	SourceLine* getline();								// call getline from the top-of-stack, pop it when eof
+	SrcFile const* src_file() const { return src_file_; }
+	int line_nr() const { return line_nr_; }
+	const std::string& text() const { return text_; }
+	void clear_text() { text_.clear(); }
 
 private:
-	bool    keep_lines_;					    		// if false(default), only last line is preserved
-	std::vector<SourceLine*> wptr_lines;			// points into SourceFile's SourceLines
-	std::vector<SourceFile*> files;	    				// all files opened, owns the pointers
-	std::vector<SourceFile*> wptr_stack;			// current input stack
+	SrcFile*	src_file_;	// weak pointer
+	int	        line_nr_;
+	std::string	text_;		// cleared by Source if keep_lines = false
 };
+
 
 #endif // SOURCE_H_

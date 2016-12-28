@@ -4,21 +4,26 @@
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
 
+#include "memcheck.h"
 #include "source.h"
 #include "test.h"
 
-#define T_CREATE(data,keep) \
+#define T_CREATE(data_) \
 		if (file) { delete file; file = NULL; } \
-		create_test_file("test.1", data); \
-		file = new SourceFile("test.1", keep); \
+		create_test_file("test.1", data_); \
+		file = new SrcFile("test.1"); \
         IS(file->filename(), "test.1"); \
 		OK(file->good())
 
-#define T_READ(nr, text_) \
+#define T_READ(line_nr_, text_) \
 		line = file->getline(); \
 		OK(line != NULL); \
-		IS(line->line_num, nr); \
-		IS(line->text, text_)
+		OK(line->src_file() == file); \
+		IS(line->line_nr(), line_nr_); \
+		IS(line->text(), text_); \
+		line->clear_text();	\
+		IS(line->text(), ""); \
+		delete line
 
 #define T_EOF() \
 		line = file->getline(); OK(line == NULL); \
@@ -29,16 +34,23 @@
 	delete file; file = NULL; \
 	delete_test_file("test.1")
 
-void test_SourceFile()
-{
-	SourceFile* file = NULL;
-    SourceLine* line;
-    SourceLine* lines[3];
+
+int main() {
+	START_TESTING();
+
+	SrcFile* file = NULL;
+	SrcLine* line;
+
+	// non-existent file
+	delete_test_file("test.1");
+	file = new SrcFile("test.1");	// perror
+	IS(file->filename(), "test.1");
+	OK(!file->good());
+	T_EOF();
+	T_DELETE();
 
 	// empty file
-	T_CREATE("", false);
-
-	T_CREATE("", false);
+	T_CREATE("");
 	T_EOF();
 	T_DELETE();
 
@@ -47,7 +59,7 @@ void test_SourceFile()
 		"f2.asm\r"
 		"f3.asm\r\n"
 		"f4.asm\n\r"
-		"f5.asm", false);
+		"f5.asm");
 
 	T_READ(1, "f1.asm");
 	T_READ(2, "f2.asm");
@@ -59,99 +71,82 @@ void test_SourceFile()
 	T_DELETE();
 
 	// end file in all new-line types, plus invalid LF-CR
-	T_CREATE("f1.asm", false); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
-	T_CREATE("f1.asm\n", false); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
-	T_CREATE("f1.asm\r", false); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
-	T_CREATE("f1.asm\r\n", false); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
-	T_CREATE("f1.asm\n\r", false); T_READ(1, "f1.asm"); T_READ(2, ""); T_EOF(); T_DELETE();
+	T_CREATE("f1.asm"); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
+	T_CREATE("f1.asm\n"); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
+	T_CREATE("f1.asm\r"); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
+	T_CREATE("f1.asm\r\n"); T_READ(1, "f1.asm"); T_EOF(); T_DELETE();
+	T_CREATE("f1.asm\n\r"); T_READ(1, "f1.asm"); T_READ(2, ""); T_EOF(); T_DELETE();
 
-	// verify keep_lines
-	T_CREATE("1\n2\n3", false);
-	T_READ(1, "1"); lines[0] = line;
-	T_READ(2, "2"); lines[1] = line;
-	T_READ(3, "3"); lines[2] = line;
-	T_EOF();
-	OK(lines[0]->wptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "");
-	OK(lines[1]->wptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "");
-	OK(lines[2]->wptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
-	T_DELETE();
-
-	T_CREATE("1\n2\n3", true);
-	T_READ(1, "1"); lines[0] = line;
-	T_READ(2, "2"); lines[1] = line;
-	T_READ(3, "3"); lines[2] = line;
-	T_EOF();
-	OK(lines[0]->wptr_source == file); IS(lines[0]->line_num, 1); IS(lines[0]->text, "1");
-	OK(lines[1]->wptr_source == file); IS(lines[1]->line_num, 2); IS(lines[1]->text, "2");
-	OK(lines[2]->wptr_source == file); IS(lines[2]->line_num, 3); IS(lines[2]->text, "3");
-	T_DELETE();
-}
-
-#undef T_CREATE
-#undef T_READ
-#undef T_EOF
-#undef T_DELETE
-
-void test_SourceStack()
-{
+	// Source stack
 	create_test_file("test.1", "11\n12\n13");
 	create_test_file("test.2", "21\n22\n23");
 	delete_test_file("test.3");
 
-	SourceStack st1(false);
-	SourceStack st2(true);
+	for (int i = 0; i < 2; ++i) {
+		bool keep = (i == 1);
 
-	OK(!st1.has_file("test.1")); OK(!st1.has_file("test.2")); OK(!st1.has_file("test.3"));
-	OK(!st2.has_file("test.1")); OK(!st2.has_file("test.2")); OK(!st2.has_file("test.3"));
+		Source st(keep);
+		SrcLine* line;
+		SrcLine* lines[6];
 
-	OK(st1.open("test.1"));
-	OK(st2.open("test.1"));
+		OK(!st.has_file("test.1")); OK(!st.has_file("test.2")); OK(!st.has_file("test.3")); 
 
-	OK(st1.has_file("test.1")); OK(!st1.has_file("test.2")); OK(!st1.has_file("test.3"));
-	OK(st2.has_file("test.1")); OK(!st2.has_file("test.2")); OK(!st2.has_file("test.3"));
+		OK(st.open("test.1"));
+		OK(st.has_file("test.1")); OK(!st.has_file("test.2")); OK(!st.has_file("test.3")); 
 
-	OK(!st1.open("test.4"));
-	OK(!st2.open("test.4"));
+		OK(!st.open("test.3"));		// perror
+		OK(st.has_file("test.1")); OK(!st.has_file("test.2")); OK(!st.has_file("test.3")); 
 
-	OK(st1.has_file("test.1")); OK(!st1.has_file("test.2")); OK(!st1.has_file("test.3"));
-	OK(st2.has_file("test.1")); OK(!st2.has_file("test.2")); OK(!st2.has_file("test.3"));
+		lines[0] = line = st.getline(); 
+		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 1); IS(line->text(), "11");
 
-	SourceLine* l1 = st1.getline(); IS(l1->line_num, 1); IS(l1->text, "11");
-	SourceLine* l2 = st2.getline(); IS(l2->line_num, 1); IS(l2->text, "11");
+		OK(st.open("test.2"));
+		OK(st.has_file("test.1")); OK(st.has_file("test.2")); OK(!st.has_file("test.3")); 
 
-	OK(st1.open("test.2"));
-	OK(st2.open("test.2"));
+		lines[1] = line = st.getline(); 
+		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 1); IS(line->text(), "21");
 
-	OK(st1.has_file("test.1")); OK(st1.has_file("test.2")); OK(!st1.has_file("test.3"));
-	OK(st2.has_file("test.1")); OK(st2.has_file("test.2")); OK(!st2.has_file("test.3"));
+		lines[2] = line = st.getline(); 
+		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 2); IS(line->text(), "22");
 
-	l1 = st1.getline(); IS(l1->line_num, 1); IS(l1->text, "21");
-	l2 = st2.getline(); IS(l2->line_num, 1); IS(l2->text, "21");
+		lines[3] = line = st.getline();
+		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 3); IS(line->text(), "23");
 
-	l1 = st1.getline(); IS(l1->line_num, 2); IS(l1->text, "22");
-	l2 = st2.getline(); IS(l2->line_num, 2); IS(l2->text, "22");
+		lines[4] = line = st.getline();
+		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 2); IS(line->text(), "12");
 
-	l1 = st1.getline(); IS(l1->line_num, 3); IS(l1->text, "23");
-	l2 = st2.getline(); IS(l2->line_num, 3); IS(l2->text, "23");
+		lines[5] = line = st.getline(); 
+		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 3); IS(line->text(), "13");
 
-	l1 = st1.getline(); IS(l1->line_num, 2); IS(l1->text, "12");
-	l2 = st2.getline(); IS(l2->line_num, 2); IS(l2->text, "12");
+		line = st.getline(); 
+		OK(line == NULL); 
+		
+		line = st.getline();
+		OK(line == NULL);
 
-	l1 = st1.getline(); IS(l1->line_num, 3); IS(l1->text, "13");
-	l2 = st2.getline(); IS(l2->line_num, 3); IS(l2->text, "13");
+		// check keep_lines
+		line = lines[0];
+		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 1); IS(line->text(), keep ? "11" : "");
 
-	l1 = st1.getline(); OK(l1 == NULL); l1 = st1.getline(); OK(l1 == NULL); l1 = st1.getline(); OK(l1 == NULL);
-	l2 = st2.getline(); OK(l2 == NULL); l2 = st2.getline(); OK(l2 == NULL); l2 = st2.getline(); OK(l2 == NULL);
+		line = lines[1];
+		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 1); IS(line->text(), keep ? "21" : "");
+
+		line = lines[2];
+		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 2); IS(line->text(), keep ? "22" : "");
+
+		line = lines[3];
+		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 3); IS(line->text(), keep ? "23" : "");
+
+		line = lines[4];
+		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 2); IS(line->text(), keep ? "12" : "");
+
+		line = lines[5];
+		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 3); IS(line->text(), keep ? "13" : "");
+	}
 
 	delete_test_file("test.1");
 	delete_test_file("test.2");
 	delete_test_file("test.3");
-}
 
-int main()
-{
-	START_TESTING();
-	test_SourceFile();
-	test_SourceStack();
 	DONE_TESTING();
 }

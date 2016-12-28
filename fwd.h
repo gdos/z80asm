@@ -8,22 +8,6 @@
 
 #include "memcheck.h"
 
-class Env;
-class Expr;
-class Instr;
-class Module;
-class ObjectFile;
-class Opcode;
-class Scanner;
-class Section;
-class SourceFile;
-class SourceStack;
-class Symbol;
-class SymbolTable;
-struct SrcFile;
-struct SrcLine;
-struct SrcPos;
-
 class noncopyable {
 public:
 	noncopyable() {}
@@ -33,5 +17,9 @@ private:
 	noncopyable(const noncopyable&);
 	noncopyable& operator=(const noncopyable&);
 };
+
+class Source;
+class SrcFile;
+class SrcLine;
 
 #endif // FWD_H_
