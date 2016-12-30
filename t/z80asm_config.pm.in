@@ -11,19 +11,20 @@ use Capture::Tiny 'capture';
 use Config;
 
 use Exporter 'import';
-@EXPORT = qw(call_z80asm $PROGNAME $VERSION $COPYRIGHT $NOTFOUND $Z80ASM);
+@EXPORT = qw(call_z80asm $PROG $NAME $VERSION $COPYRIGHT $NOTFOUND $Z80ASM);
 
-$PROGNAME  = '@Z80ASM_NAME@';
+$PROG      = '@Z80ASM_PROG@';
+$NAME      = '@Z80ASM_NAME@';
 $VERSION   = '@Z80ASM_VERSION@';
 $COPYRIGHT = '@Z80ASM_COPYRIGHT@';
 $NOTFOUND  = do { unlink 'nonexistent'; open(my $fh, "<nonexistent"); $! };
-$Z80ASM    = (grep {-f $_} map {"$_/$PROGNAME$Config{_exe}"} qw( . x64/Debug x64/Release Debug Release))[0];
+$Z80ASM    = (grep {-f $_} map {"$_/$PROG$Config{_exe}"} qw( . x64/Debug x64/Release Debug Release))[0];
  
 sub call_z80asm {
 	my($args, $exp_out, $exp_err, $exp_exit) = @_;
 	
 	my $cmd = "$Z80ASM $args";
-	ok 1, $cmd;
+	ok 1, "[line ".(caller)[2]."] ".$cmd;
 	my($out, $err, $exit) = capture { system $cmd; };
 	eq_or_diff $out, $exp_out, "out";
 	eq_or_diff $err, $exp_err, "out";

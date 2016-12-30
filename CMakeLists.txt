@@ -12,7 +12,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -U__STRICT_ANSI__ -D_CRT_SECU
 #-----------------------------------------------------------------------------
 # The version number.
 #-----------------------------------------------------------------------------
-set(Z80ASM_NAME         "z80asm")
+set(Z80ASM_PROG         "z80asm")
+set(Z80ASM_NAME         "Z80 Module Assembler")
 set(Z80ASM_VERSION 		"1.0.0")
 set(Z80ASM_COPYRIGHT    "(c) Paulo Custodio 2015-2016")
 
@@ -144,7 +145,7 @@ foreach(TEST ${EXE_TESTS})
 	add_test(
 		NAME				${TEST_PROG}
 		COMMAND				${TEST_PROG}
-		WORKING_DIRECTORY	${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY	${PROJECT_BINARY_DIR}
 	)
 endforeach(TEST ${EXE_TESTS})
 
@@ -153,6 +154,6 @@ foreach(TEST ${PERL_TESTS})
 	add_test(
 		NAME				${TEST_PROG}
 		COMMAND				perl ${PROJECT_SOURCE_DIR}/t/${TEST_PROG}
-		WORKING_DIRECTORY	${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY	${PROJECT_BINARY_DIR}
 	)
 endforeach(TEST ${PERL_TESTS})

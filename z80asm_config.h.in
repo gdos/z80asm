@@ -7,6 +7,7 @@
 #define Z80ASM_CONFIG_H_
 
 // name verison and copyright from CMakeLists.txt
+#define Z80ASM_PROG			"@Z80ASM_PROG@"
 #define Z80ASM_NAME			"@Z80ASM_NAME@"
 #define Z80ASM_VERSION		"@Z80ASM_VERSION@"
 #define Z80ASM_COPYRIGHT	"@Z80ASM_COPYRIGHT@"
