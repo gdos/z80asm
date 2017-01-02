@@ -11,6 +11,8 @@
 
 class Parser;
 
+#define TK_END_INPUT	0
+
 extern void *ParseAlloc(void *(*mallocProc)(size_t));
 extern void ParseFree(void *yyp, void(*freeProc)(void*));
 extern void Parse(void *yyp, int yymajor, int yyminor, Parser* parser);
