@@ -6,6 +6,7 @@
 
 #include "message.h"
 #include "options.h"
+#include "source.h"
 #include "z80asm_config.h"
 
 namespace msg {
@@ -37,15 +38,88 @@ namespace msg {
 		opts.cout() << "Assembling " << file << std::endl;
 	}
 
+	void loading(const std::string& file) {
+		opts.cout() << "Loading " << file << std::endl;
+	}
+
+	void reading(const std::string& file) {
+		opts.cout() << "Reading " << file << std::endl;
+	}
+
 }; // namespace
 
 namespace err {
+	static void message_at(SrcLine* from, int column, bool is_error,
+		const std::string& m1, const std::string& m2 = "", const std::string& m3 = "") {
+		if (from)
+			opts.cerr() << from->src_file()->filename() << ':' << from->line_nr() << ": ";
+		if (is_error)
+			opts.cerr() << "Error";
+		else
+			opts.cerr() << "Warning";
+		opts.cerr() << ": " << m1 << m2 << m3 << std::endl;
+		if (from && column > 0) {
+			opts.cerr() << "\t" << from->text() << std::endl << "\t";
+			for (int i = 1; i < column; i++) {
+				char c;
+				if (i - 1 < static_cast<int>(from->text().length()))
+					c = from->text()[i - 1];
+				else
+					c = ' ';
+
+				if (c == '\t')
+					opts.cerr() << c;
+				else
+					opts.cerr() << ' ';
+			}
+			opts.cerr() << "^~~~" << std::endl;
+		}
+	}
+
+	static void error_at(SrcLine* from, int column,
+		const std::string& m1, const std::string& m2 = "", const std::string& m3 = "") {
+		message_at(from, column, true, m1, m2, m3);
+	}
+
+	static void warning_at(SrcLine* from, int column,
+		const std::string& m1, const std::string& m2 = "", const std::string& m3 = "") {
+		message_at(from, column, false, m1, m2, m3);
+	}
+
 	void unknown_option(const std::string& arg) {
-		opts.cerr() << "Error: " << arg << ": unknown option, use -h for usage" << std::endl;
+		error_at(NULL, 0, arg, ": unknown option, use -h for usage");
 	}
 
 	void missing_option_argument(const std::string& arg) {
-		opts.cerr() << "Error: " << arg << ": missing option argument, use -h for usage" << std::endl;
+		error_at(NULL, 0, arg, ": missing option argument, use -h for usage");
+	}
+
+	void recursive_include(const std::string& file, SrcLine* from, int column) {
+		error_at(from, column, file, ": recursive include");
+	}
+
+	void open_file(const std::string& file, SrcLine* from, int column) {
+		error_at(from, column, file, ": open failure");
+	}
+
+	void syntax(SrcLine* from, int column) {
+		error_at(from, column, "syntax");
+	}
+
+	void expected_file(SrcLine* from, int column) {
+		error_at(from, column, "expected file");
+	}
+
+	void expected_quotes(SrcLine* from, int column) {
+		error_at(from, column, "expected quotes");
+	}
+
+	void expected_end_of_statement(SrcLine* from, int column) {
+		error_at(from, column, "expected end of statement");
+	}
+
+	void failure(SrcLine* from) {
+		error_at(from, 0, "parse failure");
 	}
 
 }; // namespace
