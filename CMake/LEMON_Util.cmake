@@ -105,7 +105,7 @@ macro(LEMON_TARGET Name LemonInput LemonSource LemonHeader)
     add_custom_command(
       OUTPUT ${LEMON_GEN_OUT} ${LEMON_GEN_SOURCE} ${LEMON_GEN_HEADER}
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/${LemonInput} ${LEMON_BIN_INPUT}
-      COMMAND ${LEMON_EXECUTABLE} ${INPUT_NAME} ${LEMON_${Name}_EXTRA_ARGS}
+      COMMAND ${LEMON_EXECUTABLE} -s ${INPUT_NAME} ${LEMON_${Name}_EXTRA_ARGS}
       DEPENDS ${LemonInput} ${LEMON_TEMPLATE} ${LEMON_EXECUTABLE_TARGET} ${LEMON_EXECUTABLE}
       COMMENT "[LEMON][${Name}] Building parser with ${LEMON_EXECUTABLE}"
       )
