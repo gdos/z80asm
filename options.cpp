@@ -136,6 +136,10 @@ void Options::push_include_path(const std::string& directory) {
 	include_path_.push_back(directory);
 }
 
+void Options::pop_include_path() {
+	include_path_.pop_back();
+}
+
 Options::iterator Options::begin_include_path() {
 	return include_path_.begin();
 }
@@ -154,6 +158,10 @@ void Options::clear_library_path() {
 
 void Options::push_library_path(const std::string& directory) {
 	library_path_.push_back(directory);
+}
+
+void Options::pop_library_path() {
+	library_path_.pop_back();
 }
 
 Options::iterator Options::begin_library_path() {

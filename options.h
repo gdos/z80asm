@@ -30,12 +30,14 @@ public:
 	// search paths
 	void clear_include_path();
 	void push_include_path(const std::string& directory);
+	void pop_include_path();
 	iterator begin_include_path();
 	iterator end_include_path();
 	std::string search_include_path(const std::string& filename);
 
 	void clear_library_path();
 	void push_library_path(const std::string& directory);
+	void pop_library_path();
 	iterator begin_library_path();
 	iterator end_library_path();
 	std::string search_library_path(const std::string& filename);

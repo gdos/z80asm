@@ -47,6 +47,17 @@ void test_paths() {
 	IS(*it, "tmp1"); ++it;
 	OK(it == opts.end_include_path());
 
+	opts.push_include_path("tmp2");
+	it = opts.begin_include_path();
+	IS(*it, "tmp1"); ++it;
+	IS(*it, "tmp2"); ++it;
+	OK(it == opts.end_include_path());
+
+	opts.pop_include_path();
+	it = opts.begin_include_path();
+	IS(*it, "tmp1"); ++it;
+	OK(it == opts.end_include_path());
+
 	opts.clear_include_path();
 	IS(opts.search_include_path("path.h"), "path.h");
 
@@ -57,6 +68,17 @@ void test_paths() {
 	it = opts.begin_library_path();
 	IS(*it, "tmp2");
 	++it;
+	OK(it == opts.end_library_path());
+
+	opts.push_library_path("tmp3");
+	it = opts.begin_library_path();
+	IS(*it, "tmp2"); ++it;
+	IS(*it, "tmp3"); ++it;
+	OK(it == opts.end_library_path());
+
+	opts.pop_library_path();
+	it = opts.begin_library_path();
+	IS(*it, "tmp2"); ++it;
 	OK(it == opts.end_library_path());
 
 	opts.clear_library_path();
