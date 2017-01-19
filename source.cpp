@@ -11,8 +11,7 @@
 //-----------------------------------------------------------------------------
 // Source
 //-----------------------------------------------------------------------------
-Source::Source(bool keep_lines)
-	: keep_lines_(keep_lines) {}
+Source::Source() {}
 
 Source::~Source() {
 	for (std::vector<SrcFile*>::iterator it = files_.begin(); it != files_.end(); ++it)
@@ -47,10 +46,6 @@ bool Source::open(const std::string& filename) {
 
 SrcLine* Source::getline() {
 	while (!stack_.empty()) {
-		// delete previous line, unless keep_lines_
-		if (!lines_.empty() && !keep_lines_)
-			lines_.back()->clear_text();
-
 		SrcLine* line = stack_.back()->getline();
 		if (line != NULL) {
 			// store new line
@@ -98,4 +93,8 @@ SrcLine::SrcLine(SrcFile* src_file, int line_nr, std::string text)
 
 SrcLine::~SrcLine() {
 	// do not delete src_file_
+}
+
+void SrcLine::clear_text() { 
+	text_.clear(); 
 }

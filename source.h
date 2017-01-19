@@ -14,7 +14,7 @@
 
 class Source : noncopyable {
 public:
-	Source(bool keep_lines = false);
+	Source();
 	virtual ~Source();
 
 	bool has_file(const std::string& filename);		// is the given file in the open stack?
@@ -25,7 +25,6 @@ private:
 	std::vector<SrcFile*> files_;		// has all read files
 	std::vector<SrcLine*> lines_;		// has all read lines
 	std::vector<SrcFile*> stack_;		// weak pointer to open stack of files
-	bool keep_lines_;					// if false(default), only last line is preserved
 };
 
 class SrcFile : noncopyable {
@@ -52,13 +51,12 @@ public:
 	SrcFile const* src_file() const { return src_file_; }
 	int line_nr() const { return line_nr_; }
 	const std::string& text() const { return text_; }
-	void clear_text() { text_.clear(); }
+	void clear_text();
 
 private:
 	SrcFile*	src_file_;	// weak pointer
 	int	        line_nr_;
-	std::string	text_;		// cleared by Source if keep_lines = false
+	std::string	text_;		// kept during scanning and if opts.do_list() is true
 };
-
 
 #endif // SOURCE_H_

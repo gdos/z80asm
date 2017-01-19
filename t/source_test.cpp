@@ -85,7 +85,7 @@ int main() {
 	for (int i = 0; i < 2; ++i) {
 		bool keep = (i == 1);
 
-		Source st(keep);
+		Source st;
 		SrcLine* line;
 		SrcLine* lines[6];
 
@@ -103,22 +103,28 @@ int main() {
 		OK(st.open("test.2"));
 		OK(st.has_file("test.1")); OK(st.has_file("test.2")); OK(!st.has_file("test.3")); 
 
+		if (!keep) line->clear_text();
 		lines[1] = line = st.getline(); 
 		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 1); IS(line->text(), "21");
 
-		lines[2] = line = st.getline(); 
+		if (!keep) line->clear_text();
+		lines[2] = line = st.getline();
 		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 2); IS(line->text(), "22");
 
+		if (!keep) line->clear_text();
 		lines[3] = line = st.getline();
 		IS(line->src_file()->filename(), "test.2"); IS(line->line_nr(), 3); IS(line->text(), "23");
 
+		if (!keep) line->clear_text();
 		lines[4] = line = st.getline();
 		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 2); IS(line->text(), "12");
 
-		lines[5] = line = st.getline(); 
+		if (!keep) line->clear_text();
+		lines[5] = line = st.getline();
 		IS(line->src_file()->filename(), "test.1"); IS(line->line_nr(), 3); IS(line->text(), "13");
 
-		line = st.getline(); 
+		if (!keep) line->clear_text();
+		line = st.getline();
 		OK(line == NULL); 
 		
 		line = st.getline();
