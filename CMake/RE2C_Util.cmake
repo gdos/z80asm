@@ -91,7 +91,7 @@ macro(RE2C_TARGET Name Input Output)
 
   add_custom_command(OUTPUT ${Output}
     COMMAND ${RE2C_EXECUTABLE}
-    ARGS ${RE2C_EXECUTABLE_opts} -o${Output} ${Input}
+    ARGS -i --no-generation-date -W ${RE2C_EXECUTABLE_opts} -o${Output} ${Input}
     DEPENDS ${Input} ${RE2C_EXECUTABLE_TARGET} ${RE2C_EXECUTABLE}
     COMMENT "[RE2C][${Name}] Building scanner with ${RE2C_EXECUTABLE}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
