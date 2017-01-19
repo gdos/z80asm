@@ -18,8 +18,15 @@ private:
 	noncopyable& operator=(const noncopyable&);
 };
 
+class Assembler;
+class Module;
+class Object;
+class Parser;
+class Scanner;
 class Source;
 class SrcFile;
 class SrcLine;
+class Symtab;
+class Token;
 
 #endif // FWD_H_
