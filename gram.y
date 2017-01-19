@@ -5,34 +5,25 @@
 //-----------------------------------------------------------------------------
 
 %include {
-#include "lemon.h"
+#include "parser.h"
+#include "options.h"
+#include "message.h"
+#include "token.h"
 #include <iostream>
 }  
    
-%token_type 	{int}
+%token_type 	{Token*}
+%default_type	{Token*}
+%token_destructor {Token::free_token($$);}
+
 %token_prefix	TK_
-%extra_argument	{ Parser* parser }
+%extra_argument	{Parser* parser}
+%syntax_error 	{err::syntax(parser->line());}
+%parse_failure 	{err::failure(parser->line());}
 
-// operator precedence
-%left PLUS MINUS.   
-%left DIVIDE TIMES.  
+file 		::= statements.
+statements 	::= statements statement.
 
-%syntax_error {  
-  std::cout << "Syntax error!" << std::endl;  
-}   
-   
-program ::= expr(A).   { std::cout << "Result=" << A << std::endl; }  
-   
-expr(A) ::= expr(B) MINUS  expr(C).   { A = B - C; }  
-expr(A) ::= expr(B) PLUS  expr(C).   { A = B + C; }  
-expr(A) ::= expr(B) TIMES  expr(C).   { A = B * C; }  
-expr(A) ::= expr(B) DIVIDE expr(C).  { 
-
-         if(C != 0){
-           A = B / C;
-          }else{
-           std::cout << "divide by zero" << std::endl;
-           }
-}  /* end of DIVIDE */
-
-expr(A) ::= INTEGER(B). { A = B; }
+statement	::= ENDL.
+statement	::= NOP ENDL.
+statement	::= ORG NUMBER.

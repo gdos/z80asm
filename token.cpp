@@ -6,11 +6,10 @@
 
 #include "memcheck.h"
 #include "token.h"
-#include "lemon.h"
-#include "gram.h"
+#include "parser.h"
 
 Token::Token()
-	: id_(TK_END_INPUT), num_value_(0), str_value_("") {}
+	: id_(EOI), num_value_(0), str_value_("") {}
 
 Token::Token(int num_value)
 	: id_(TK_NUMBER), num_value_(num_value), str_value_("") {}

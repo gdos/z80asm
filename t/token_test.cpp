@@ -6,8 +6,7 @@
 
 #include "memcheck.h"
 #include "token.h"
-#include "lemon.h"
-#include "gram.h"
+#include "parser.h"
 #include "test.h"
 
 #define T_TOKEN(id_, num_value_, str_value_) \
@@ -21,7 +20,7 @@ int main()
 	Token* t;
 
 	t = new Token;
-	T_TOKEN(TK_END_INPUT, 0, "");
+	T_TOKEN(EOI, 0, "");
 	delete t;
 
 	t = new Token(12);

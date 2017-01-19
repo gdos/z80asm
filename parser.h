@@ -6,19 +6,26 @@
 #ifndef PARSER_H_
 #define PARSER_H_
 
+#include "memcheck.h"
 #include "fwd.h"
+#include "lemon.h"
 
-class Parser {
+class Parser : noncopyable {
 public:
-    Parser(ObjectFile* obj);
-    virtual ~Parser();
+	Parser(Object* object);
+	virtual ~Parser();
 
-    void parse(int yymajor, int yyminor);
-	void end_parse();
+	Object* object() { return object_; }
+	SrcLine* line() { return line_; }
 
-private:
-    ObjectFile*     obj_;
-	void*			parser_;		// lemon parser
+	bool parse();
+
+protected:
+	Object*		object_;		// weak pointer
+	SrcLine*	line_;			// weak pointer
+	void*		lemon_;
+
+	bool parse_include(Scanner* scan);
 };
 
-#endif // PARSER_H_
+#endif // ndef PARSER_H_
