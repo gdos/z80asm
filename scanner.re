@@ -8,16 +8,18 @@
 #include "scanner.h"
 #include "message.h"
 #include "object.h"
+#include "opcode.h"
 #include "parser.h"
 #include "source.h"
 #include <cassert>
 
 Scanner::Scanner()
-	: line_(NULL), text_(""), number_(0)
+	: line_(NULL), text_(""), number_(0), opcode_(NULL)
 	, ts_(NULL), p_(NULL)
 	, marker_(NULL), ctxmarker_(NULL) {}
 
-Scanner::~Scanner() {}
+Scanner::~Scanner() {
+}
 
 void Scanner::init(SrcLine* line) {
 	line_ = line;
@@ -51,6 +53,8 @@ int Scanner::get_opcode() {
 			s+				{ continue; }
 
 			'INCLUDE' /nw	{ return TK_INCLUDE; }
+			
+			'NOP' /nw		{ opcode_ = Opcode::nop(line_); return TK_OPCODE_VOID; }
 		*/
 	}
 }

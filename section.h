@@ -1,28 +1,26 @@
 //-----------------------------------------------------------------------------
-// z80asm assembled module
+// z80asm section of code
 // Copyright (c) Paulo Custodio, 2015-2016
 // License: http://www.perlfoundation.org/artistic_license_2_0
 //-----------------------------------------------------------------------------
-#ifndef MODULE_H_
-#define MODULE_H_
+#ifndef SECTION_H_
+#define SECTION_H_
 
 #include "memcheck.h"
 #include "fwd.h"
 #include <string>
 #include <vector>
 
-class Module : noncopyable {
+class Section : noncopyable {
 public:
-	Module(const std::string& name);
-	virtual ~Module();
+	Section(const std::string& name);
+	virtual ~Section();
 
 	void add_opcode(Opcode* opcode);
 
 private:
-	std::string	name_;					// module name
-	Symtab*		symtab_;				// symbols
-	std::vector<Section*> sections_;	// list of sections
-	Section*	section_;				// point to current section
+	std::string	name_;				// section name
+	std::vector<Opcode*> opcodes_;	// opcodes of this section
 };
 
-#endif // ndef MODULE_H_
+#endif // ndef SECTION_H_

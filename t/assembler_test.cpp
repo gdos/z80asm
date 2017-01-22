@@ -222,11 +222,24 @@ void test_open() {
 	delete_test_file("test.asm");
 }
 
+void test_opcodes() {
+	Assembler* as;
+
+	create_test_file("test.asm", "nop\\nop\n nop;nop\n nop \\ nop\n");
+	as = new Assembler;
+	T_ASM("test.asm", true,
+		"Assembling test.asm\n"
+		"Reading test.asm\n", "");
+	delete as;
+	delete_test_file("test.asm");
+}
+
 int main() {
 	START_TESTING();
 
 	test_open();
 	test_include();
+	test_opcodes();
 
 	DONE_TESTING();
 }

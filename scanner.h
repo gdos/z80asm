@@ -24,6 +24,7 @@ public:
 	int column() { return line_ ? p_ - ts_ + 1 : 0; }
 	const std::string& text() const { return text_; }
 	int number() const { return number_; }
+	Opcode* opcode() { return opcode_; }
 
 	void flush();				// flush input
 	
@@ -34,6 +35,7 @@ private:
 	SrcLine*	line_;			// weak pointer to line being parsed
 	std::string	text_;			// token text value
 	int			number_;		// token number value
+	Opcode*		opcode_;		// weak pointer to opcode
 
 	const char*	ts_;			// scan pointers
 	const char* p_;

@@ -44,6 +44,13 @@ bool Parser::parse() {
 				}
 				break;
 
+			case TK_OPCODE_VOID:
+				if (!parse_opcode_void(&scan)) {
+					ok = false;
+					scan.flush();
+				}
+				break;
+
 			default:
 				ok = false;
 				scan.error(err::syntax);
@@ -75,4 +82,18 @@ bool Parser::parse_include(Scanner* scan) {
 	line_ = save_line;
 
 	return ok;
+}
+
+bool Parser::parse_opcode_void(Scanner* scan) {
+	Opcode* opcode = scan->opcode();
+
+	// check for end of statement
+	if (!scan->get_end_statement()) {
+		delete opcode;
+		return false;
+	}
+	else {
+		object_->add_opcode(opcode);
+		return true;
+	}
 }

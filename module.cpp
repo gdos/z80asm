@@ -7,14 +7,22 @@
 #include "memcheck.h"
 #include "module.h"
 #include "message.h"
+#include "section.h"
 #include "source.h"
 #include "options.h"
 
 Module::Module(const std::string& name)
-	: name_(name) {}
+	: name_(name) {
+	sections_.push_back(new Section(""));
+	section_ = sections_.back();
+}
 
-Module::~Module() {}
+Module::~Module() {
+	for (std::vector<Section*>::iterator it = sections_.begin(); it != sections_.end(); ++it)
+		delete *it;
+	sections_.clear();
+}
 
-bool Module::open(std::string source, SrcLine* from) {
-	return true;
+void Module::add_opcode(Opcode* opcode) {
+	section_->add_opcode(opcode);
 }

@@ -76,3 +76,8 @@ bool Object::open_source(std::string file, SrcLine* from, int column) {
 bool Object::parse() {
 	return parser_->parse();
 }
+
+// call-backs from parser
+void Object::add_opcode(Opcode* opcode) {
+	modules_.back()->add_opcode(opcode);
+}

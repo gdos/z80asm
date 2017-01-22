@@ -25,6 +25,9 @@ public:
 	bool open_source(std::string file, SrcLine* from = NULL, int column = 0);
 	bool parse();
 
+	// call-backs from parser
+	void add_opcode(Opcode* opcode);
+
 private:
 	Source*		source_;			// source code
 	Parser*		parser_;			// source parser

@@ -26,6 +26,7 @@ protected:
 	void*		lemon_;
 
 	bool parse_include(Scanner* scan);
+	bool parse_opcode_void(Scanner* scan);
 };
 
 #endif // ndef PARSER_H_
