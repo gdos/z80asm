@@ -6,9 +6,7 @@
 
 #include "memcheck.h"
 #include "expr.h"
-#include "symbol.h"
-
-// TODO: simplify expressions to tranform LABEL1-LABEL2 into a constant
+#include <cassert>
 
 // exponentiation by squaring
 Result Expr::power(int base, int exp) {
@@ -27,27 +25,22 @@ Result Expr::power(int base, int exp) {
 	}
 }
 
-SymbolExpr::SymbolExpr(Symbol* symbol)
-	: symbol_(symbol) {
+
+PatchExpr::PatchExpr(PatchType type, Expr* expr, int offset)
+	: type_(type), expr_(expr), offset_(offset) {}
+
+PatchExpr::~PatchExpr() {
+	delete expr_;
 }
 
-SymbolExpr::~SymbolExpr() {
-	// do not delete weak poiter symbol_
-}
-
-Result SymbolExpr::operator()() const {
-	Result result;
-	int level = symbol_->reserve();
-	if (level == 1) {		// can recurse
-		result = (*symbol_)();
+int PatchExpr::size() const {
+	switch (type_) {
+	case PATCH_BYTE: return 1;
+	case PATCH_WORD: return 2;
+	case PATCH_TRI: return 3;
+	case PATCH_QUAD: return 4;
+	case PATCH_OFFSET: return 1;
+	default: assert(0); 
 	}
-	else {
-		result = Result(0, Result::RECURSIVE_SYMBOL);
-	}
-	level = symbol_->release();
-	return result;
-}
-
-Expr* SymbolExpr::clone() const {
-	return new SymbolExpr(symbol_);
+	return 0;	// not reached
 }

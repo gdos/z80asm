@@ -15,14 +15,20 @@ public:
 
 private:
 	noncopyable(const noncopyable&);
-	noncopyable& operator=(const noncopyable&);
+	noncopyable& operator=(const noncopyable&) {}
 };
 
+typedef unsigned char byte;
+
 class Assembler;
+class Expr;
 class Module;
 class Object;
+class Opcode;
 class Parser;
+class PatchExpr;
 class Scanner;
+class Section;
 class Source;
 class SrcFile;
 class SrcLine;
