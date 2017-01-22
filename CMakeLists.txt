@@ -8,6 +8,7 @@ project(z80asm CXX C)
 
 # Force C++ 98
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -U__STRICT_ANSI__ -D_CRT_SECURE_NO_WARNINGS")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS")
 
 #-----------------------------------------------------------------------------
 # The version number.
