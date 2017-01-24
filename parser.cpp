@@ -8,6 +8,7 @@
 #include "parser.h"
 #include "message.h"
 #include "object.h"
+#include "opcode.h"
 #include "options.h"
 #include "scanner.h"
 #include "source.h"

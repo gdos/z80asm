@@ -9,6 +9,7 @@
 #include "memcheck.h"
 #include "fwd.h"
 #include <vector>
+#include <cstddef>
 
 class Opcode : noncopyable {
 public:
