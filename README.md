@@ -19,7 +19,7 @@ Copyright (C) Paulo Custodio, 2011-2017
 
 ## Repository
 
-The original C source code is in the [z88dk GitHub](https://github.com/z88dk/z88dk/src/z80asm/).
+The original C source code is in the [z88dk GitHub](https://github.com/z88dk/z88dk/tree/master/src/z80asm).
 This C++ port is in the [z80asm GitHub](https://github.com/z88dk/z80asm).
 
 ## License
