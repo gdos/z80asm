@@ -73,15 +73,41 @@ include_directories(
 #-----------------------------------------------------------------------------
 # make parser
 #-----------------------------------------------------------------------------
-include(${PROJECT_SOURCE_DIR}/CMake/LEMON_Util.cmake)
-LEMON_TARGET(parser gram.y gram.cpp gram.h)
+add_custom_command(
+	OUTPUT 	${PROJECT_SOURCE_DIR}/gram.cpp ${PROJECT_SOURCE_DIR}/gram.h
+	COMMAND ${LEMON_EXECUTABLE}
+	ARGS	-s 
+			-T${PROJECT_SOURCE_DIR}/lemon/lempar.c
+			gram.y
+	DEPENDS ${PROJECT_SOURCE_DIR}/gram.y 
+			${LEMON_EXECUTABLE}
+	COMMENT "[LEMON] Building parser with ${LEMON_EXECUTABLE}"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 #-----------------------------------------------------------------------------
 # make scanner
 #-----------------------------------------------------------------------------
-include(${PROJECT_SOURCE_DIR}/CMake/RE2C_Util.cmake)
-RE2C_TARGET(scanner scanner.re  ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
-ADD_RE2C_LEMON_DEPENDENCY(scanner parser)
+add_custom_command(
+	OUTPUT 	${PROJECT_SOURCE_DIR}/scanner.cpp
+	COMMAND ${RE2C_EXECUTABLE}
+	ARGS	-i --no-generation-date -W 
+			-oscanner.cpp
+			scanner.re
+	DEPENDS ${PROJECT_SOURCE_DIR}/scanner.re 
+			${PROJECT_SOURCE_DIR}/gram.h 
+			${RE2C_EXECUTABLE}
+	COMMENT "[RE2C] Building scanner with ${RE2C_EXECUTABLE}"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+set_source_files_properties(${PROJECT_SOURCE_DIR}/parser.cpp
+	PROPERTIES OBJECT_DEPENDS ${PROJECT_SOURCE_DIR}/gram.h 
+)
+
+set_source_files_properties(${PROJECT_SOURCE_DIR}/token.cpp
+	PROPERTIES OBJECT_DEPENDS ${PROJECT_SOURCE_DIR}/gram.h 
+)
 
 #-----------------------------------------------------------------------------
 # make program
@@ -92,11 +118,11 @@ file(GLOB SOURCES
 	*.re
 	*.y
 )
+
 add_library(z80asmlib STATIC
-	${LEMON_parser_OUTPUTS}
-	${RE2C_scanner_OUTPUTS}
+	${PROJECT_SOURCE_DIR}/gram.cpp
+	${PROJECT_SOURCE_DIR}/scanner.cpp
 	${SOURCES}
-	z80asm_config.h.in
 	${PROJECT_BINARY_DIR}/z80asm_config.h
 )
 
