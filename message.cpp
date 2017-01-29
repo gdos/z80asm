@@ -8,6 +8,7 @@
 #include "options.h"
 #include "source.h"
 #include "z80asm_config.h"
+#include <algorithm>
 
 namespace msg {
 	void version() {
@@ -51,19 +52,24 @@ namespace msg {
 namespace err {
 	static void message_at(SrcLine* from, int column, bool is_error,
 		const std::string& m1, const std::string& m2 = "", const std::string& m3 = "") {
+		if (from && from->src_file())
+			opts.cerr() << from->src_file()->filename() << ':';
 		if (from)
-			opts.cerr() << from->src_file()->filename() << ':' << from->line_nr() << ": ";
+			opts.cerr() << from->line_nr() << ": ";
 		if (is_error)
 			opts.cerr() << "Error";
 		else
 			opts.cerr() << "Warning";
 		opts.cerr() << ": " << m1 << m2 << m3 << std::endl;
 		if (from && column > 0) {
-			opts.cerr() << "\t" << from->text() << std::endl << "\t";
+			std::string text = from->text();
+			std::replace(text.begin(), text.end(), '\n', '\\');
+			opts.cerr() << "\t" << text << std::endl << "\t";
+
 			for (int i = 1; i < column; i++) {
 				char c;
-				if (i - 1 < static_cast<int>(from->text().length()))
-					c = from->text()[i - 1];
+				if (i - 1 < static_cast<int>(text.length()))
+					c = text[i - 1];
 				else
 					c = ' ';
 
