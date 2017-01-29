@@ -15,6 +15,12 @@
 #include <iostream>
 #include <fstream>
 
+#define T_STR(a, b) { \
+		std::string sa(a); \
+		std::string sb(b); \
+		OK(sa == sb); \
+		if (sa != sb) { DIAG("<<<"); DIAG(sa); DIAG(">>>"); DIAG(sb); DIAG("---"); } \
+	}
 
 // create test file
 inline void create_test_file(const char* filename, const char* text)

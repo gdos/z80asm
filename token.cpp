@@ -6,16 +6,10 @@
 
 #include "memcheck.h"
 #include "token.h"
-#include "parser.h"
+#include "scanner.h"
 
-Token::Token()
-	: id_(EOI), num_value_(0), str_value_("") {}
-
-Token::Token(int num_value)
-	: id_(TK_NUMBER), num_value_(num_value), str_value_("") {}
-
-Token::Token(const std::string& str_value)
-	: id_(TK_STRING), num_value_(0), str_value_(str_value) {}
+Token::Token(int id, int value, const char* ts, const char* te)
+	: id_(id), value_(value), ts_(ts), te_(te) {}
 
 Token::~Token() {}
 

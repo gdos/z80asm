@@ -8,39 +8,42 @@
 
 #include "memcheck.h"
 #include "fwd.h"
+#include "token.h"
 #include <string>
+#include <vector>
 
 class Scanner : noncopyable {
 public:
 	Scanner();
 	virtual ~Scanner();
 
-	void init(SrcLine* line);	// prepare to scan line
-	int get_opcode();			// return next opcode or label
-	bool get_filename();		// return file name of INCLUDE in text_, syntax error otherwise
-	bool get_end_statement();	// check for end of statement, syntax error otherwise
+	void init(SrcLine* line);		// prepare to scan line
+	Token* peek(int n = 0);			// peek Nth token
+	Token* next();					// return peek(0), advance pointer
+	int get_pos() const;			// return current input pos
+	void set_pos(int pos);			// revert to point of get_pos()
+	bool scan_filename();			// scan argument to INCLUDE and BINARY - enclosed in '', "" or <>, no C-escapes
 
-	SrcLine* from() { return line_; }
-	int column() { return line_ ? p_ - ts_ + 1 : 0; }
 	const std::string& text() const { return text_; }
-	int number() const { return number_; }
-	Opcode* opcode() { return opcode_; }
 
-	void flush();				// flush input
-	
-								// show errors and flush input; errfunc() is called for error message
 	void error(void(*errfunc)(SrcLine*, int));
+	void warning(void(*errfunc)(SrcLine*, int));
+	void flush();					// flush input
 
 private:
-	SrcLine*	line_;			// weak pointer to line being parsed
-	std::string	text_;			// token text value
-	int			number_;		// token number value
-	Opcode*		opcode_;		// weak pointer to opcode
-
-	const char*	ts_;			// scan pointers
-	const char* p_;
+	SrcLine*	line_;				// weak pointer to line being parsed
+	const char* p_;					// scan pointers
 	const char* marker_;
 	const char* ctxmarker_;
+	std::vector<Token>	tokens_;	// list of tokens from start of line
+	unsigned			tok_p_;		// current token
+	std::string			text_;	// last TK_STRING token
+
+	static Token eoi_token;
+	static SrcLine default_line;
+
+	bool push_next();				// push next token from line to tokens_, return false at end of input
+	int number(const char* ts, int base);	// convert number at ts, show warning if overflow
 };
 
 #endif // SCANNER_H_

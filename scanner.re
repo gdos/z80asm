@@ -7,24 +7,74 @@
 #include "memcheck.h"
 #include "scanner.h"
 #include "message.h"
-#include "object.h"
-#include "opcode.h"
-#include "parser.h"
 #include "source.h"
 #include <cassert>
+#include <cstdlib>
+#include <climits>
+
+Token Scanner::eoi_token = Token(TK_EOI);
+SrcLine Scanner::default_line = SrcLine(NULL, 0, "");
 
 Scanner::Scanner()
-	: line_(NULL), text_(""), number_(0), opcode_(NULL)
-	, ts_(NULL), p_(NULL)
-	, marker_(NULL), ctxmarker_(NULL) {}
+	: line_(NULL), p_(NULL), marker_(NULL), ctxmarker_(NULL)
+	, tok_p_(0) {
+	init(&default_line);
+}
 
 Scanner::~Scanner() {
 }
 
 void Scanner::init(SrcLine* line) {
 	line_ = line;
-	ts_ = p_ = line->text().c_str();
+	p_ = line->text().c_str();
 	marker_ = ctxmarker_ = NULL;
+	tokens_.clear();
+	tok_p_ = 0;
+}
+
+Token* Scanner::peek(int n) {
+	assert(n >= 0);
+
+	// fill buffer
+	while (tok_p_ + n >= tokens_.size()) {
+		if (!push_next())
+			return &eoi_token;
+	}
+
+	return &tokens_[tok_p_ + n];
+}
+
+Token* Scanner::next() {
+	Token* tok = peek();
+	if (tok_p_ < tokens_.size())
+		++tok_p_;
+	return tok;
+}
+
+int Scanner::get_pos() const {
+	return tok_p_;
+}
+
+void Scanner::set_pos(int pos) {
+	assert(pos >= 0);
+	assert(pos <= static_cast<int>(tokens_.size()));
+	tok_p_ = pos;
+}
+
+void Scanner::error(void(*errfunc)(SrcLine*, int)) {
+	int column = (line_ == NULL || p_ == NULL) ? 0 : p_ - line_->text().c_str() + 1;
+	errfunc(line_, column);
+	flush();
+}
+
+void Scanner::warning(void(*errfunc)(SrcLine*, int)) {
+	int column = (line_ == NULL || p_ == NULL) ? 0 : p_ - line_->text().c_str() + 1;
+	errfunc(line_, column);
+}
+
+int Scanner::number(const char* ts, int base) {
+	unsigned long value = std::strtoul(ts, NULL, base);
+	return static_cast<int>(value);
 }
 
 /*!re2c
@@ -33,211 +83,204 @@ void Scanner::init(SrcLine* line) {
 	re2c:define:YYMARKER = marker_;
 	re2c:define:YYCTXMARKER = ctxmarker_;
 	re2c:yyfill:enable = 0;
+	re2c:indent:top = 2;
 
-	end		=  [\x00];
-	s		=  [ \t\v\r\n\f];
-	w		=  [a-zA-Z0-9_];
-	nw		= [^a-zA-Z0-9_];
-	ident	=  [a-zA-Z_] w*;
-
+	end		= [\x00];
+	space	= [ \t\v\r\n\f];
+	alpha	= [a-zA-Z_];
+	alnum	= [a-zA-Z_0-9];
+	dec		= [0-9];
+	oct		= [0-7];
+	hex		= [0-9a-fA-F];
+	bin		= [01];
 */
 
-int Scanner::get_opcode() {
-	if (!line_)
-		return EOI;
-
-	for (;;) {
-		/*!re2c
-			*				{ --p_; error(err::syntax); return EOI; }
-			end | ';'		{ return EOI; }
-			s+				{ continue; }
-
-			'INCLUDE' /nw	{ return TK_INCLUDE; }
-			
-			'NOP' /nw		{ opcode_ = Opcode::nop(line_); return TK_OPCODE_VOID; }
-		*/
-	}
-}
-
-bool Scanner::get_filename() {
-	if (!line_)
-		return false;
-
-	for (;;) {
-		/*!re2c
-			*				{ --p_; error(err::expected_file); return false; }
-			s+				{ continue; }
-			'"'				{ break; }
-		*/
-	}
-
-	const char* file_start = p_;
-	for (;;) {
-		/*!re2c
-			*				{ --p_; error(err::expected_quotes); return false; }
-			'"'				{ break; }
-			[\x20-\xFF]		{ continue; }
-		*/
-	}
-	const char* file_end = p_ - 1;
-	text_ = std::string(file_start, file_end);
-	return true;
-}
-
-bool Scanner::get_end_statement() {
-	if (!line_)
-		return false;
-
-	for (;;) {
-		/*!re2c
-		*				{ --p_; error(err::expected_end_of_statement); return false; }
-		s+				{ continue; }
-		end				{ --p_; return true; }
-		';'				{ flush(); return true; }
-		'\\'			{ return true; }
-		*/
-	}
-	return false;	// not reached
-}
-
 void Scanner::flush() {
-	if (line_) {
-		p_ = ts_ + line_->text().length();
+	for (;;) {
+		/*!re2c
+			*				{ continue; }
+			end				{ --p_; return; }
+			'\n'			{ return; }
+		*/
 	}
 }
 
-
-void Scanner::error(void(*errfunc)(SrcLine*, int)) {
-	if (line_) {
-		errfunc(from(), column());
-		flush();
-	}
-}
-
-#if 0
-
-#define GOTO(state_) state = yyc##state_; goto yyc_##state_
-
-bool Scanner::scan_line(SrcLine* line) {
-	const char*	YYSTART = line->text().c_str();
-	const char*	YYCURSOR = YYSTART;
-	const char* YYTOKEN;
-	const char* YYCTXMARKER;
-	std::string file;
-	int state = yycstart;
-	std::vector<int> states;
+bool Scanner::push_next() {
+	int hash; 				// build hash of identifiers
+	int count;
+	bool squote;
+	const char* ts;
 
 	for (;;) {
-		/*  !re2c
-			re2c:define:YYCTYPE = char;
-			re2c:yyfill:enable = 0;
-			re2c:define:YYGETCONDITION = "state";
-			re2c:define:YYGETCONDITION:naked = 1;
-			re2c:define:YYSETCONDITION = "state = @@;";
-			re2c:define:YYSETCONDITION:naked = 1;
-			re2c:indent:top = 2;
+		ts = p_;
+		/*!re2c
+			*				{ --p_; error(err::syntax); return false; }
+			end				{ --p_; return false; }
+			';'				{ tokens_.push_back(Token(TK_ENDL)); flush(); return true; }
+			'\n' | '\\'		{ tokens_.push_back(Token(TK_ENDL)); return true; }
+			space			{ continue; }
+			'!'				{ tokens_.push_back(Token(TK_EXCLAM)); return true; }
+			'#'				{ tokens_.push_back(Token(TK_HASH)); return true; }
+			'%'				{ tokens_.push_back(Token(TK_PERCENT)); return true; }
+			'&'				{ tokens_.push_back(Token(TK_AMPERSHAND)); return true; }
+			'&&'			{ tokens_.push_back(Token(TK_AMPERSHAND2)); return true; }
+			'('				{ tokens_.push_back(Token(TK_LPAREN)); return true; }
+			')'				{ tokens_.push_back(Token(TK_RPAREN)); return true; }
+			'*'				{ tokens_.push_back(Token(TK_STAR)); return true; }
+			'**'			{ tokens_.push_back(Token(TK_STAR2)); return true; }
+			'+'				{ tokens_.push_back(Token(TK_PLUS)); return true; }
+			'++'			{ tokens_.push_back(Token(TK_PLUS2)); return true; }
+			','				{ tokens_.push_back(Token(TK_COMMA)); return true; }
+			'-'				{ tokens_.push_back(Token(TK_MINUS)); return true; }
+			'--'			{ tokens_.push_back(Token(TK_MINUS2)); return true; }
+			'.'				{ tokens_.push_back(Token(TK_DOT)); return true; }
+			'/'				{ tokens_.push_back(Token(TK_SLASH)); return true; }
+			':'				{ tokens_.push_back(Token(TK_COLON)); return true; }
+			'<'				{ tokens_.push_back(Token(TK_LESS)); return true; }
+			'<<'			{ tokens_.push_back(Token(TK_LESS2)); return true; }
+			'<='			{ tokens_.push_back(Token(TK_LESS_EQ)); return true; }
+			'<>' | '!='		{ tokens_.push_back(Token(TK_NOT_EQUAL)); return true; }
+			'='				{ tokens_.push_back(Token(TK_EQUAL)); return true; }
+			'=='			{ tokens_.push_back(Token(TK_EQUAL2)); return true; }
+			'>'				{ tokens_.push_back(Token(TK_GREATER)); return true; }
+			'>>'			{ tokens_.push_back(Token(TK_GREATER2)); return true; }
+			'>='			{ tokens_.push_back(Token(TK_GREATER_EQ)); return true; }
+			'?'				{ tokens_.push_back(Token(TK_QUESTION)); return true; }
+			'['				{ tokens_.push_back(Token(TK_LSQUARE)); return true; }
+			']'				{ tokens_.push_back(Token(TK_RSQUARE)); return true; }
+			'^'				{ tokens_.push_back(Token(TK_CARET)); return true; }
+			'{'				{ tokens_.push_back(Token(TK_LCURLY)); return true; }
+			'}'				{ tokens_.push_back(Token(TK_RCURLY)); return true; }
+			'|'				{ tokens_.push_back(Token(TK_VBAR)); return true; }
+			'||'			{ tokens_.push_back(Token(TK_VBAR2)); return true; }
+			'~'				{ tokens_.push_back(Token(TK_TILDE)); return true; }
 
-			end		=  [\x00];
-			not_end	= [^\x00];
-			ns		= [^ \t\v\r\n\f];
-			comment	= ';' not_end*;
-			end_stmt= s* comment?;
+			alpha			{ hash = ALNUM_HASH(yych); count = 1; goto ident; }
 
-			<*>				*				{ --YYCURSOR; 
-											  err::syntax(line, YYCURSOR - YYSTART + 1); 
-											  return false; }
-			<*>				s+				{ continue; }
+			dec hex* 'h'	{ tokens_.push_back(Token(TK_NUMBER, number(ts, 16))); return true; }
+			'$' hex+		{ tokens_.push_back(Token(TK_NUMBER, number(ts + 1, 16))); return true; }
+			'0x' hex+		{ tokens_.push_back(Token(TK_NUMBER, number(ts + 2, 16))); return true; }
 
-			<start, end>	end | ';'		{ return true; }
+			bin+ 'b'		{ tokens_.push_back(Token(TK_NUMBER, number(ts, 2))); return true; }
+			[@%] bin+		{ tokens_.push_back(Token(TK_NUMBER, number(ts + 1, 2))); return true; }
+			'0b' bin+		{ tokens_.push_back(Token(TK_NUMBER, number(ts + 2, 2))); return true; }
+			
+			dec+			{ tokens_.push_back(Token(TK_NUMBER, number(ts, 10))); return true; }
 
-			<start>			s* 'INCLUDE' /nw { GOTO(include); }
-
-			<include>		s* '"'			{ YYTOKEN = YYCURSOR; GOTO(include_file); }
-			<include_file>	[^"\x00]+ '"'	{ file = std::string(YYTOKEN, YYCURSOR); 
-											  GOTO(end); }
-		
+			"'"				{ text_.clear(); squote = true;  goto quote; }
+			'"'				{ text_.clear(); squote = false; goto quote; }
 		*/
 	}
-	return true;	// not reached
-}
+	assert(0);				// not reached
 
-
-#if 0
-
-
-
-#include "token.h"
-#include <cassert>
-
-
-struct ScanPos {
-	SrcLine*	line;
-	const char*	ts;
-	const char*	p;
-	const char* token;
-	const char* marker;
-	const char* ctxmarker;
-
-	ScanPos(SrcLine* line_) : line(line_), ts(), p(ts), token(NULL), marker(NULL), ctxmarker(NULL) {}
-};
-
-static bool scan_label(ScanPos* pos, Parser* parser) { return true; }
-static bool get_opcode(ScanPos* pos, Parser* parser) { return true; }
-
-static bool do_include(ScanPos* pos, Parser* parser) {
-	const char* file_s = strchr(pos->token, '"'); assert(file_s);
-	const char* file_e = strchr(file_s+1, '"'); assert(file_e);
-	std::string file(file_s, file_e);
-	return parser->object()->open(file);
-}
-
-#define PUSH(t)				parser->push(t);
-#define SYNTAX_ERROR()		
-
-static bool scan_line(ScanPos* pos, Parser* parser) {
-	bool ok = true;
-	while (ok) {
-		pos->token = pos->p;
-	}
-
-	return ok;
-}
-
-
-
-bool scan_line(SrcLine* line, Parser* parser) {
-	ScanPos pos(line);
-	return scan_line(&pos, parser);
-#if 0
+ident:
 	for (;;) {
-		const char* YYTOKEN = YYCURSOR;
-		/*~~!re2c
-			re2c:define:YYCTYPE = char;
-			re2c:yyfill:enable = 0;
-			re2c:indent:top = 2;
-
-
-
-			'NOP' /nw			{ PUSH(TK_NOP); continue; }
-			'ORG' /nw			{ PUSH(TK_ORG); continue; }
-
-		*/
-		continue;
-
-	include1:
-		YYTOKEN = YYCURSOR;
-		/*~~!re2c
-			*					{ SYNTAX_ERROR(); break; }
-
-
+		/*!re2c
+			*				{ if (!(yych == '\'' && count == 2 && hash == KW_AF)) --p_;
+							  tokens_.push_back(Token(TK_IDENT, hash, ts, p_)); return true; }
+			alnum			{ if (++count < 6) { hash += ALNUM_HASH(yych) << ((count - 1) * 6); } continue; }
 		*/
 	}
+	assert(0);				// not reached
 
-	// push a newline to synchronize parser even on errors
-	parser->push(TK_ENDL);
-	return ok;
-#endif
+quote:
+	for (;;) {
+		ts = p_;
+		/*!re2c
+			*				{ --p_; error(err::missing_closing_quote); return false; }
+			"'"				{ if (squote) {
+								if (text_.length() != 1) { error(err::squoted_string); return false; }
+								else { tokens_.push_back(Token(TK_NUMBER, text_[0])); return true; }
+							  }
+							  else { text_.push_back(yych); continue; }
+							}
+			'"'				{ if (!squote) {
+								tokens_.push_back(Token(TK_STRING, 0, text_.c_str(), text_.c_str()+text_.length())); return true;
+							  }
+							  else { text_.push_back(yych); continue; }
+							}
+			"\\x" hex+		{ text_.push_back(number(ts + 2, 16)); continue; }
+			'\\' oct+		{ text_.push_back(number(ts + 1, 8)); continue; }
+			"\\a"			{ text_.push_back('\a'); continue; }
+			"\\b"			{ text_.push_back('\b'); continue; }
+			"\\f"			{ text_.push_back('\f'); continue; }
+			"\\n"			{ text_.push_back('\n'); continue; }
+			"\\r"			{ text_.push_back('\r'); continue; }
+			"\\t"			{ text_.push_back('\t'); continue; }
+			"\\v"			{ text_.push_back('\v'); continue; }
+			'\\\\'			{ text_.push_back('\\'); continue; }
+			"\\'"			{ text_.push_back('\''); continue; }
+			'\\"'			{ text_.push_back('"'); continue; }
+			'\\?'			{ text_.push_back('?'); continue; }
+			[^\x00\n]		{ text_.push_back(yych); continue; }
+		*/
+	}
+	assert(0);				// not reached
+
+	return false;			// keep compiler happy
 }
 
-#endif
-#endif
+bool Scanner::scan_filename() {
+	const char* ts;
+
+	text_.clear();
+	for (;;) {
+		/*!re2c
+			*				{ ts = p_-1; goto word; }
+			end|'\n'|';'	{ p_--; goto end; }
+			'<'				{ ts = p_; goto angles; }
+			'"'				{ ts = p_; goto dquote; }
+			"'"				{ ts = p_; goto squote; }
+			space			{ continue; }
+		*/
+	}
+	assert(0);				// not reached
+
+word:
+	for (;;) {
+		/*!re2c
+			*					{ continue; }
+			end|'\n'|';'|space	{ p_--; text_ = std::string(ts, p_); goto end; }
+		*/
+	}
+	assert(0);				// not reached
+
+angles:
+	for (;;) {
+		/*!re2c
+			*				{ continue; }
+			end | '\n'		{ --p_; error(err::missing_closing_bracket); return false; }
+			'>'				{ text_ = std::string(ts, p_-1); goto end; }
+		*/
+	}
+	assert(0);				// not reached
+
+dquote:
+	for (;;) {
+		/*!re2c
+			*				{ continue; }
+			end | '\n'		{ --p_; error(err::missing_closing_quote); return false; }
+			'"'				{ text_ = std::string(ts, p_-1); goto end; }
+		*/
+	}
+	assert(0);				// not reached
+
+squote:
+	for (;;) {
+		/*!re2c
+			*				{ continue; }
+			end | '\n'		{ --p_; error(err::missing_closing_quote); return false; }
+			"'"				{ text_ = std::string(ts, p_-1); goto end; }
+		*/
+	}
+	assert(0);				// not reached
+
+end:
+	if (text_.empty()) {
+		error(err::expected_file); 
+		return false;
+	}
+	else {
+		return true;
+	}
+}

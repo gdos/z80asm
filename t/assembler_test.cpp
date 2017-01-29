@@ -12,13 +12,6 @@
 #include <iostream>
 #include <sstream>
 
-#define T_STR(a, b) { \
-		std::string sa(a); \
-		std::string sb(b); \
-		OK(sa == sb); \
-		if (sa != sb) { DIAG("<<<"); DIAG(sa); DIAG(">>>"); DIAG(sb); DIAG("---"); } \
-	}
-
 #define T_ASM_1(file_, expected_ok_, expected_out_, expected_err_) \
 	{ \
 		as->clear(); \
@@ -238,8 +231,10 @@ int main() {
 	START_TESTING();
 
 	test_open();
+#if 0
 	test_include();
 	test_opcodes();
+#endif
 
 	DONE_TESTING();
 }

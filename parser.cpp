@@ -29,12 +29,13 @@ bool Parser::parse() {
 	Scanner scan;
 
 	bool ok = true;
+#if 0
 	while ((line_ = object_->source()->getline())) {
 		scan.init(line_);
 
 		for (bool has_chars = true; has_chars;) {
 			switch (scan.get_opcode()) {
-			case EOI:
+			case TK_EOI:
 				has_chars = false;
 				break;
 
@@ -62,15 +63,18 @@ bool Parser::parse() {
 		if (!opts.do_list())
 			line_->clear_text();
 	}
+#endif
+
 	return ok;
 }
 
 bool Parser::parse_include(Scanner* scan) {
+#if 0
 	if (!scan->get_filename()) 
 		return false;
 	
 	// open file and push to stack of open files, may show error pointing just after file name
-	if (!object_->open_source(scan->text(), scan->from(), scan->column()))
+//	if (!object_->open_source(scan->text(), scan->from(), scan->column()))
 		return false;
 
 	// check for end of statement
@@ -83,10 +87,13 @@ bool Parser::parse_include(Scanner* scan) {
 	line_ = save_line;
 
 	return ok;
+#endif
+	return false;
 }
 
 bool Parser::parse_opcode_void(Scanner* scan) {
-	Opcode* opcode = scan->opcode();
+#if 0
+	Opcode* opcode;// = scan->opcode();
 
 	// check for end of statement
 	if (!scan->get_end_statement()) {
@@ -97,4 +104,6 @@ bool Parser::parse_opcode_void(Scanner* scan) {
 		object_->add_opcode(opcode);
 		return true;
 	}
+#endif
+	return false;
 }

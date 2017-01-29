@@ -124,8 +124,19 @@ namespace err {
 		error_at(from, column, "expected end of statement");
 	}
 
+	void missing_closing_quote(SrcLine* from, int column) {
+		error_at(from, column, "missing closing quote");
+	}
+
+	void missing_closing_bracket(SrcLine* from, int column) {
+		error_at(from, column, "missing closing bracket");
+	}
+
+	void squoted_string(SrcLine* from, int column) {
+		error_at(from, column, "invalid single quoted character");
+	}
+
 	void failure(SrcLine* from) {
 		error_at(from, 0, "parse failure");
 	}
-
 }; // namespace
