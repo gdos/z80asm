@@ -10,15 +10,6 @@
 #include "fwd.h"
 #include <cstdlib>
 
-// define tokens - leave hole 1..999 for lemon
-#include "gram.h"
-enum {
-	EOI = 0,
-	TK_INCLUDE = 1000,
-	TK_OPCODE_VOID,
-	TK_STRING
-};
-
 extern void *ParseAlloc(void *(*mallocProc)(size_t));
 extern void ParseFree(void *yyp, void(*freeProc)(void*));
 extern void Parse(void *yyp, int yymajor, Token* yyminor, Parser* parser);
