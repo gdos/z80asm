@@ -50,6 +50,9 @@ SrcLine line;
 		T_SCAN2(input_, id_, 0)
 
 void test_before_init() {
+	
+	T_INIT("");
+
 	t = scan.peek();
 	T_TOKEN(TK_EOI, 0, "");
 
