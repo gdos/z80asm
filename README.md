@@ -1,5 +1,7 @@
 # Z80 module assembler
 
+[![Build Status](https://travis-ci.org/z88dk/z80asm.svg?branch=master)](https://travis-ci.org/z88dk/z80asm)
+
 z80asm is part of the [z88dk](http://www.z88dk.org/) project and is used as the back-end of the z88dk C compilers. It has a long history of development by different people and in different platforms, resulting in a complex code base and causing changes to be difficult to implement. 
 
 Two examples were the implementation of sections and link-time resolved expressions that were difficult to get right.
