@@ -29,7 +29,6 @@ namespace err {
 	extern void expected_end_of_statement(SrcLine* from = NULL, int column = 0);
 	extern void missing_closing_quote(SrcLine* from = NULL, int column = 0);
 	extern void missing_closing_bracket(SrcLine* from = NULL, int column = 0);
-	extern void squoted_string(SrcLine* from = NULL, int column = 0);
 	extern void failure(SrcLine* from = NULL);
 }; // namespace
 

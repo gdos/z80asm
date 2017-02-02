@@ -92,7 +92,7 @@
 #endif
 /************* Begin control #defines *****************************************/
 #define YYCODETYPE unsigned char
-#define YYNOCODE 10
+#define YYNOCODE 7
 #define YYACTIONTYPE unsigned char
 #define ParseTOKENTYPE Token*
 typedef union {
@@ -106,16 +106,16 @@ typedef union {
 #define ParseARG_PDECL ,Parser* parser
 #define ParseARG_FETCH Parser* parser = yypParser->parser
 #define ParseARG_STORE yypParser->parser = parser
-#define YYNSTATE             4
-#define YYNRULE              5
-#define YY_MAX_SHIFT         3
-#define YY_MIN_SHIFTREDUCE   8
-#define YY_MAX_SHIFTREDUCE   12
-#define YY_MIN_REDUCE        13
-#define YY_MAX_REDUCE        17
-#define YY_ERROR_ACTION      18
-#define YY_ACCEPT_ACTION     19
-#define YY_NO_ACTION         20
+#define YYNSTATE             2
+#define YYNRULE              3
+#define YY_MAX_SHIFT         1
+#define YY_MIN_SHIFTREDUCE   4
+#define YY_MAX_SHIFTREDUCE   6
+#define YY_MIN_REDUCE        7
+#define YY_MAX_REDUCE        9
+#define YY_ERROR_ACTION      10
+#define YY_ACCEPT_ACTION     11
+#define YY_NO_ACTION         12
 /************* End control #defines *******************************************/
 
 /* Define the yytestcase() macro to be a no-op if is not already defined
@@ -187,29 +187,29 @@ typedef union {
 **  yy_default[]       Default action for each state.
 **
 *********** Begin parsing tables **********************************************/
-#define YY_ACTTAB_COUNT (9)
+#define YY_ACTTAB_COUNT (5)
 static const YYACTIONTYPE yy_action[] = {
- /*     0 */    13,   10,    3,    2,   19,    1,   12,    9,   11,
+ /*     0 */    11,    1,    7,    6,    5,
 };
 static const YYCODETYPE yy_lookahead[] = {
- /*     0 */     0,    1,    2,    3,    6,    7,    4,    8,    1,
+ /*     0 */     3,    4,    0,    1,    5,
 };
-#define YY_SHIFT_USE_DFLT (9)
-#define YY_SHIFT_COUNT    (3)
+#define YY_SHIFT_USE_DFLT (5)
+#define YY_SHIFT_COUNT    (1)
 #define YY_SHIFT_MIN      (0)
-#define YY_SHIFT_MAX      (7)
+#define YY_SHIFT_MAX      (2)
 static const unsigned char yy_shift_ofst[] = {
- /*     0 */     9,    0,    2,    7,
+ /*     0 */     5,    2,
 };
-#define YY_REDUCE_USE_DFLT (-3)
+#define YY_REDUCE_USE_DFLT (-4)
 #define YY_REDUCE_COUNT (1)
-#define YY_REDUCE_MIN   (-2)
+#define YY_REDUCE_MIN   (-3)
 #define YY_REDUCE_MAX   (0)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    -2,   -1,
+ /*     0 */    -3,   -1,
 };
 static const YYACTIONTYPE yy_default[] = {
- /*     0 */    18,   18,   18,   18,
+ /*     0 */    10,   10,
 };
 /********** End of lemon-generated parsing tables *****************************/
 
@@ -314,9 +314,8 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = { 
-  "$",             "ENDL",          "NOP",           "ORG",         
-  "NUMBER",        "error",         "file",          "statements",  
-  "statement",   
+  "$",             "ENDL",          "error",         "file",        
+  "statements",    "statement",   
 };
 #endif /* NDEBUG */
 
@@ -327,8 +326,6 @@ static const char *const yyRuleName[] = {
  /*   0 */ "file ::= statements",
  /*   1 */ "statements ::= statements statement",
  /*   2 */ "statement ::= ENDL",
- /*   3 */ "statement ::= NOP ENDL",
- /*   4 */ "statement ::= ORG NUMBER",
 };
 #endif /* NDEBUG */
 
@@ -440,13 +437,10 @@ static void yy_destructor(
 /********* Begin destructor definitions ***************************************/
       /* TERMINAL Destructor */
     case 1: /* ENDL */
-    case 2: /* NOP */
-    case 3: /* ORG */
-    case 4: /* NUMBER */
 {
 #line 17 "gram.y"
 Token::free_token((yypminor->yy0));
-#line 450 "gram.cpp"
+#line 444 "gram.cpp"
 }
       break;
 /********* End destructor definitions *****************************************/
@@ -688,11 +682,9 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 6, 1 },
-  { 7, 2 },
-  { 8, 1 },
-  { 8, 2 },
-  { 8, 2 },
+  { 3, 1 },
+  { 4, 2 },
+  { 5, 1 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -760,25 +752,7 @@ static void yy_reduce(
 #line 27 "gram.y"
 {
 }
-#line 764 "gram.cpp"
-}
-        break;
-      case 3: /* statement ::= NOP ENDL */
-{  yy_destructor(yypParser,2,&yymsp[-1].minor);
-#line 28 "gram.y"
-{
-}
-#line 772 "gram.cpp"
-  yy_destructor(yypParser,1,&yymsp[0].minor);
-}
-        break;
-      case 4: /* statement ::= ORG NUMBER */
-{  yy_destructor(yypParser,3,&yymsp[-1].minor);
-#line 29 "gram.y"
-{
-}
-#line 781 "gram.cpp"
-  yy_destructor(yypParser,4,&yymsp[0].minor);
+#line 756 "gram.cpp"
 }
         break;
       default:
@@ -826,7 +800,7 @@ static void yy_parse_failed(
 /************ Begin %parse_failure code ***************************************/
 #line 22 "gram.y"
 err::failure(parser->line());
-#line 830 "gram.cpp"
+#line 804 "gram.cpp"
 /************ End %parse_failure code *****************************************/
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
@@ -845,7 +819,7 @@ static void yy_syntax_error(
 /************ Begin %syntax_error code ****************************************/
 #line 21 "gram.y"
 err::syntax(parser->line());
-#line 849 "gram.cpp"
+#line 823 "gram.cpp"
 /************ End %syntax_error code ******************************************/
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }

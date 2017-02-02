@@ -45,7 +45,7 @@ private:
 
 class SrcLine {
 public:
-	SrcLine(SrcFile* src_file, int line_nr, std::string text);	
+	SrcLine(SrcFile* src_file = NULL, int line_nr = 0, std::string text = "");	
 	~SrcLine();
 
 	SrcFile const* src_file() const { return src_file_; }

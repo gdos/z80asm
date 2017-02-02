@@ -25,5 +25,3 @@ file 		::= statements.
 statements 	::= statements statement.
 
 statement	::= ENDL.
-statement	::= NOP ENDL.
-statement	::= ORG NUMBER.

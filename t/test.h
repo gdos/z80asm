@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #define T_STR(a, b) { \
 		std::string sa(a); \
@@ -21,6 +22,16 @@
 		OK(sa == sb); \
 		if (sa != sb) { DIAG("<<<"); DIAG(sa); DIAG(">>>"); DIAG(sb); DIAG("---"); } \
 	}
+
+#define START_CAPTURE() \
+		{	std::ostringstream strout, strerr; \
+			opts.set_out_err(strout, strerr)
+
+#define END_CAPTURE(out_, err_) \
+			opts.set_out_err(); \
+			T_STR(out_, strout.str()); \
+			T_STR(err_, strerr.str()); \
+		}
 
 // create test file
 inline void create_test_file(const char* filename, const char* text)

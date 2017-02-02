@@ -132,10 +132,6 @@ namespace err {
 		error_at(from, column, "missing closing bracket");
 	}
 
-	void squoted_string(SrcLine* from, int column) {
-		error_at(from, column, "invalid single quoted character");
-	}
-
 	void failure(SrcLine* from) {
 		error_at(from, 0, "parse failure");
 	}
