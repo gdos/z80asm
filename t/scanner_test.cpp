@@ -187,10 +187,12 @@ void test_errors() {
 }
 
 void test_tokens() {
-	T_INIT(" \x09" "!" "\x0a" "$" "\x0b\x0c\x0d" ".");
+	T_INIT(" \x09" "!" "\x0a" "$ ASMPC ASMPC1" "\x0b\x0c\x0d" ".");
 	T_NEXT(TK_EXCLAM);
 	T_NEXT(TK_ENDL);
-	T_NEXT(TK_DOLLAR);
+	T_NEXT(TK_ASMPC);
+	T_NEXT(TK_ASMPC);
+	T_NEXT3(TK_IDENT, 0, "ASMPC1");
 	T_NEXT(TK_DOT);
 	T_END();
 
@@ -206,7 +208,7 @@ void test_tokens() {
 	T_END();
 
 	T_INIT("$$f");
-	T_NEXT(TK_DOLLAR);
+	T_NEXT(TK_ASMPC);
 	T_NEXT2(TK_NUMBER, 15);
 	T_END();
 

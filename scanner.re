@@ -125,7 +125,6 @@ bool Scanner::push_next() {
 			'!'				{ PUSH(TK_EXCLAM); }
 			'#'				{ PUSH(TK_HASH); }
 			'##'			{ PUSH(TK_HASH2); }
-			'$'				{ PUSH(TK_DOLLAR); }
 			'%'				{ PUSH(TK_PERCENT); }
 			'&'				{ PUSH(TK_AMPERSHAND); }
 			'&&'			{ PUSH(TK_AMPERSHAND2); }
@@ -191,6 +190,9 @@ bool Scanner::push_next() {
 			'SP'	/b		{ PUSH(TK_SP); }
 			'IX'	/b		{ PUSH(TK_IX); }
 			'IY'	/b		{ PUSH(TK_IY); }
+
+			'ASMPC' /b		{ PUSH(TK_ASMPC); }
+			'$'				{ PUSH(TK_ASMPC); }
 			
 			'ADC'	/b		{ PUSH2(TK_IDENT, TK_ADC); }
 			'ADD'	/b		{ PUSH2(TK_IDENT, TK_ADD); }

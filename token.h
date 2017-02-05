@@ -16,7 +16,6 @@ enum {
 	TK_EOI = 0,
 	TK_EXCLAM = '!',
 	TK_HASH = '#',
-	TK_DOLLAR = '$',
 	TK_PERCENT = '%',
 	TK_AMPERSHAND = '&',
 	TK_LPAREN = '(',
@@ -87,6 +86,8 @@ enum {
 	TK_SP,
 	TK_IX,
 	TK_IY,
+
+	TK_ASMPC,
 
 	// words that can be used as label names or opcodes; scanner returns Token(TK_IDENT, TK_ADD) for "add"
 	TK_IDENT,
