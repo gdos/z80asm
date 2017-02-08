@@ -31,7 +31,7 @@ public:
 	SrcLine* line() { return line_; }
 	const std::string& text() const { return text_; }
 
-	int Scanner::column();
+	int column();
 	void error(void(*errfunc)(SrcLine*, int));
 	void warning(void(*errfunc)(SrcLine*, int));
 	void flush();					// flush input
