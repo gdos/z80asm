@@ -180,6 +180,7 @@ enum {
 	TK_DEFS,
 	TK_DEFW,
 	TK_ELSE,
+	TK_END,
 	TK_ENDIF,
 	TK_EXTERN,
 	TK_GLOBAL,
@@ -207,7 +208,7 @@ public:
 	int value() const { return value_; }
 	const char* ts() const { return ts_; }
 	const char* te() const { return te_; }
-	std::string text() const { return ts_ ? std::string(ts_, te_) : ""; }
+	std::string text() const { return (ts_ != NULL && te_ != NULL) ? std::string(ts_, te_) : ""; }
 
 	static void free_token(Token* token);		// needed by lemon
 

@@ -22,10 +22,16 @@ public:
 	Token* next();					// return peek(0), advance pointer
 	int get_pos() const;			// return current input pos
 	void set_pos(int pos);			// revert to point of get_pos()
-	bool scan_filename();			// scan argument to INCLUDE and BINARY - enclosed in '', "" or <>, no C-escapes
 
+	void skip_space();				// advance past blanks
+	bool eoi();						// check for TK_EOI
+	bool scan_filename();			// scan argument to INCLUDE and BINARY - enclosed in '', "" or <>, no C-escapes
+	bool scan_eos();				// get end of statment, error otherwise
+
+	SrcLine* line() { return line_; }
 	const std::string& text() const { return text_; }
 
+	int Scanner::column();
 	void error(void(*errfunc)(SrcLine*, int));
 	void warning(void(*errfunc)(SrcLine*, int));
 	void flush();					// flush input
@@ -37,13 +43,13 @@ private:
 	const char* ctxmarker_;
 	std::vector<Token>	tokens_;	// list of tokens from start of line
 	unsigned			tok_p_;		// current token
-	std::string			text_;	// last TK_STRING token
+	std::string			text_;		// last TK_STRING token
 
 	static Token eoi_token;
 	static SrcLine default_line;
 
 	bool push_next();				// push next token from line to tokens_, return false at end of input
-	int number(const char* ts, int base);	// convert number at ts, show warning if overflow
+	int number(const char* ts, int base);	// convert number at ts
 };
 
 #endif // SCANNER_H_

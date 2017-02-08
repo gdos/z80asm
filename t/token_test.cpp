@@ -31,7 +31,15 @@ int main()
 	T_TOKEN(TK_NUMBER, 23, "");
 	delete t;
 
-	t = new Token(TK_STRING, 0, hello, hello+5);
+	t = new Token(TK_STRING, 0, hello, NULL);
+	T_TOKEN(TK_STRING, 0, "");
+	delete t;
+
+	t = new Token(TK_STRING, 0, NULL, hello + 5);
+	T_TOKEN(TK_STRING, 0, "");
+	delete t;
+
+	t = new Token(TK_STRING, 0, hello, hello + 5);
 	T_TOKEN(TK_STRING, 0, "hello");
 	delete t;
 

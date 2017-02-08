@@ -6,9 +6,10 @@
 
 #include "memcheck.h"
 #include "scanner.h"
+#include "message.h"
+#include "options.h"
 #include "source.h"
 #include "token.h"
-#include "options.h"
 #include "test.h"
 #include <iostream>
 
@@ -26,7 +27,9 @@ SrcLine line;
 		IS(t->text(), text_)
 
 #define T_NEXT3(id_, value_, text_) \
-		t = scan.next(); T_TOKEN(id_, value_, text_)
+		NOK(scan.eoi()); \
+		t = scan.next(); \
+		T_TOKEN(id_, value_, text_)
 
 #define T_NEXT2(id_, value_) \
 		T_NEXT3(id_, value_, "")
@@ -35,6 +38,7 @@ SrcLine line;
 		T_NEXT2(id_, 0)
 
 #define T_END() \
+		OK(scan.eoi()); \
 		t = scan.next(); T_TOKEN(TK_EOI, 0, ""); \
 		t = scan.next(); T_TOKEN(TK_EOI, 0, "")
 
@@ -183,6 +187,31 @@ void test_errors() {
 			"test.asm:1: Error: syntax\n" 
 			"\tone`two\n"
 			"\t   ^~~~\n");
+	}
+	{
+		START_CAPTURE();
+		T_INIT("! # %");
+		t = scan.peek(0); IS(t->id(), TK_EXCLAM);
+		t = scan.peek(1); IS(t->id(), TK_HASH);
+		t = scan.peek(2); IS(t->id(), TK_PERCENT);
+		T_NEXT(TK_EXCLAM);
+		scan.error(err::syntax);
+		END_CAPTURE(
+			"",
+			"0: Error: syntax\n"
+			"\t! # %\n"
+			"\t  ^~~~\n");
+	}
+	{
+		START_CAPTURE();
+		T_INIT("! # %");
+		T_NEXT(TK_EXCLAM);
+		scan.error(err::syntax);
+		END_CAPTURE(
+			"",
+			"0: Error: syntax\n"
+			"\t! # %\n"
+			"\t  ^~~~\n");
 	}
 }
 
@@ -401,6 +430,7 @@ void test_tokens() {
 	T_SCAN2("defs", TK_IDENT, TK_DEFS);
 	T_SCAN2("defw", TK_IDENT, TK_DEFW);
 	T_SCAN2("else", TK_IDENT, TK_ELSE);
+	T_SCAN2("end", TK_IDENT, TK_END);
 	T_SCAN2("endif", TK_IDENT, TK_ENDIF);
 	T_SCAN2("extern", TK_IDENT, TK_EXTERN);
 	T_SCAN2("global", TK_IDENT, TK_GLOBAL);
@@ -781,6 +811,34 @@ void test_numbers() {
 	T_SCAN2(" &Q17777777777 ", TK_NUMBER, 0x7FFFFFFF);
 }
 
+void test_eos() {
+	T_INIT("");
+	OK(scan.scan_eos());
+	T_END();
+
+	{
+		START_CAPTURE();
+		T_INIT("!");
+		NOK(scan.scan_eos());
+		T_END();
+		END_CAPTURE(
+			"",
+			"0: Error: expected end of statement\n"
+			"\t!\n"
+			"\t^~~~\n");
+	}
+
+	T_INIT("!   \n#   \\%  ; . \\ :\n&  ");
+	T_NEXT(TK_EXCLAM);
+	OK(scan.scan_eos());
+	T_NEXT(TK_HASH);
+	OK(scan.scan_eos());
+	T_NEXT(TK_PERCENT);
+	OK(scan.scan_eos());
+	T_NEXT(TK_AMPERSHAND);
+	T_END();
+}
+
 int main()
 {
 	START_TESTING();
@@ -793,6 +851,7 @@ int main()
 	test_quotes();
 	test_include();
 	test_numbers();
+	test_eos();
 
 	DONE_TESTING();
 }

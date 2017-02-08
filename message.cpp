@@ -120,7 +120,7 @@ namespace err {
 		error_at(from, column, "expected quotes");
 	}
 
-	void expected_end_of_statement(SrcLine* from, int column) {
+	void expected_eos(SrcLine* from, int column) {
 		error_at(from, column, "expected end of statement");
 	}
 
