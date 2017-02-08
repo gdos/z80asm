@@ -25,6 +25,7 @@ protected:
 	SrcLine*	line_;			// weak pointer
 	void*		lemon_;
 
+	bool parse_statement(Scanner* scan);
 	bool parse_include(Scanner* scan);
 	bool parse_opcode_void(Scanner* scan);
 };

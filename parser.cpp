@@ -29,9 +29,67 @@ bool Parser::parse() {
 	Scanner scan;
 
 	bool ok = true;
-#if 0
 	while ((line_ = object_->source()->getline())) {
 		scan.init(line_);
+
+		while (!scan.eoi()) {
+			if (!parse_statement(&scan)) {
+				ok = false;
+				break;			// skip rest of line
+			}
+		}
+	}
+	return ok;
+}
+
+bool Parser::parse_statement(Scanner* scan) {
+	Token* t0 = scan->peek(0);
+	switch (t0->id()) {
+	case TK_EOI: 
+		return true;
+
+	case TK_ENDL:
+		scan->next();
+		return true;
+
+	case TK_IDENT:
+		switch (t0->value()) {
+		case TK_INCLUDE:
+			return parse_include(scan);
+
+		default:
+			goto exit_error;
+		}
+	default: 
+		goto exit_error;
+	}
+
+exit_error:
+	scan->error(err::syntax);
+	return false;
+}
+
+bool Parser::parse_include(Scanner* scan) {
+	if (!scan->scan_filename())
+		return false;
+
+	// open file and push to stack of open files, may show error pointing just after file name
+	if (!object_->open_source(scan->text(), scan->line(), scan->column()))
+		return false;
+
+	// check for end of statement
+	if (!scan->scan_eos())
+		return false;
+
+	// recurse to parse included file and continue in next statement
+	SrcLine* save_line = line_;
+	bool ok = parse();
+	line_ = save_line;
+
+	return ok;
+}
+
+#if 0
 
 		for (bool has_chars = true; has_chars;) {
 			switch (scan.get_opcode()) {
@@ -63,33 +121,10 @@ bool Parser::parse() {
 		if (!opts.do_list())
 			line_->clear_text();
 	}
-#endif
 
 	return ok;
 }
-
-bool Parser::parse_include(Scanner* scan) {
-#if 0
-	if (!scan->get_filename()) 
-		return false;
-	
-	// open file and push to stack of open files, may show error pointing just after file name
-//	if (!object_->open_source(scan->text(), scan->from(), scan->column()))
-		return false;
-
-	// check for end of statement
-	if (!scan->get_end_statement())
-		return false;
-
-	// recurse to parse included file and continue in next statement
-	SrcLine* save_line = line_;
-	bool ok = parse();
-	line_ = save_line;
-
-	return ok;
 #endif
-	return false;
-}
 
 bool Parser::parse_opcode_void(Scanner* scan) {
 #if 0
